@@ -24,6 +24,8 @@ class LNode():
     """
 
     def __init__(self, graph: "Layout", name: str= None, originObj=None):
+        if name is not None:
+            assert isinstance(name, str)
         self.originObj = originObj
         self.name = name
 

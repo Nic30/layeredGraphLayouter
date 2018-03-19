@@ -43,7 +43,7 @@ class LPort():
         it = chain(self.incomingEdges, self.outgoingEdges)
         if filterSelfLoops:
             for e in it:
-                if e.isSelfLoop():
+                if e.isSelfLoop:
                     continue
                 yield e
         else:

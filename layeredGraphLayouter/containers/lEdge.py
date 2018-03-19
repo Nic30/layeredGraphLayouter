@@ -14,6 +14,8 @@ class LEdge():
     :ivar isSelfLoop: flag, if True this edge starts and ends on same node
     """
     def __init__(self, name: str=None, originObj=None):
+        if name is not None:
+            assert isinstance(name, str)
         self.name = name
         self.originObj = originObj
         self.src = None

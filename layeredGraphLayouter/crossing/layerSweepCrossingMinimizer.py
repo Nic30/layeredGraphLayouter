@@ -104,7 +104,7 @@ class LayerSweepCrossingMinimizer():
 
         self.graphsWhoseNodeOrderChanged = set()
 
-        emptyGraph = not layers or sum(layers, key=len) == 0
+        emptyGraph = not layers or sum(len(l) for l in layers) == 0
         singleNode = len(layers) == 1 and len(layers[0]) == 1
 
         # [TODO]
