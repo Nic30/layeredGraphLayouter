@@ -4,7 +4,7 @@ from layeredGraphLayouter.containers.lEdge import LEdge
 
 
 class LNodeLayer(list):
-    def __init__(self, graph: "Layout" = None):
+    def __init__(self, graph: "LGraph" = None):
         self.graph = graph
         self.inGraphIndex = len(graph.layers)
         self.graph.layers.append(self)
@@ -18,7 +18,7 @@ class LNodeLayer(list):
             self.append(v)
 
 
-class Layout():
+class LGraph():
     def __init__(self):
         self.edges = []
         self.nodes = []

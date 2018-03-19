@@ -1,7 +1,7 @@
 from typing import List
 
 from layeredGraphLayouter.containers.constants import NodeType
-from layeredGraphLayouter.containers.lGraph import LNodeLayer, Layout
+from layeredGraphLayouter.containers.lGraph import LNodeLayer, LGraph
 
 
 class SweepCopy():
@@ -37,7 +37,7 @@ class SweepCopy():
             for node in layer:
                 po[node] = list(node.iterPorts())
 
-    def transferNodeAndPortOrdersToGraph(self, lGraph: Layout):
+    def transferNodeAndPortOrdersToGraph(self, lGraph: LGraph):
         """
         the 'NORTH_OR_SOUTH_PORT' option allows the crossing minimizer to decide
         the side a corresponding dummy node is placed on in order to reduce the number of crossings

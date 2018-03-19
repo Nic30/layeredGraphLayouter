@@ -4,7 +4,7 @@ from random import Random
 from typing import List
 
 from layeredGraphLayouter.containers.constants import PortSide
-from layeredGraphLayouter.containers.lGraph import Layout
+from layeredGraphLayouter.containers.lGraph import LGraph
 from layeredGraphLayouter.containers.lNode import LNode
 from layeredGraphLayouter.crossing.allCrossingsCounter import AllCrossingsCounter
 from layeredGraphLayouter.crossing.barycenterHeuristic import BarycenterHeuristic
@@ -88,7 +88,7 @@ class LayerSweepCrossingMinimizer():
     :note: port from ELK
     """
 
-    def process(self, graph: Layout):
+    def process(self, graph: LGraph):
         """
         Short-circuit cases in which no crossings can be minimized.
         Note that in-layer edges may be subject to crossing minimization
@@ -150,7 +150,7 @@ class LayerSweepCrossingMinimizer():
         else:
             return self.minimizeCrossingsWithCounter
 
-    def compareDifferentRandomizedLayouts(self, gData: Layout):
+    def compareDifferentRandomizedLayouts(self, gData: LGraph):
         # Reset the seed, otherwise copies of hierarchical
         # graphs in different parent nodes are layouted differently.
         self.random = Random(self.randomSeed)
@@ -215,7 +215,7 @@ class LayerSweepCrossingMinimizer():
 
         return oldNumberOfCrossings
 
-    def minimizeCrossings(self, graphsToSweepOn: List[Layout], minimizingMethod):
+    def minimizeCrossings(self, graphsToSweepOn: List[LGraph], minimizingMethod):
         for gData in graphsToSweepOn:
             if gData.currentNodeOrder:
                 minimizingMethod(gData)

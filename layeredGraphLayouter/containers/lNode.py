@@ -23,7 +23,7 @@ class LNode():
     :ivar WEST: list of LPort for on left side.
     """
 
-    def __init__(self, graph: "Layout", name: str= None, originObj=None):
+    def __init__(self, graph: "LGraph", name: str= None, originObj=None):
         if name is not None:
             assert isinstance(name, str)
         self.originObj = originObj
@@ -168,7 +168,7 @@ class LNode():
 
 
 class LayoutExternalPort(LNode):
-    def __init__(self, graph: "Layout", name: str=None, direction=None):
+    def __init__(self, graph: "LGraph", name: str=None, direction=None):
         super(LayoutExternalPort, self).__init__(graph, name)
         self.direction = direction
         self.type = NodeType.EXTERNAL_PORT

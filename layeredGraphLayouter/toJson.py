@@ -26,7 +26,7 @@ class ToJson():
         j["isExternalPort"] = True
         return j
 
-    def LayoutNet_toJson(self, ln):
+    def LEdge_toJson(self, ln):
         j = {}
         if ln.name:
             j['name'] = ln.name
@@ -35,11 +35,12 @@ class ToJson():
 
         return j
 
-    def Layout_toJson(self, la):
+    def LGraph_toJson(self, la):
         # nets = sorted(nets , key=lambda x : x.name)
-        toJson = self.toJson
-        return {"nodes": [toJson(n) for n in la.nodes],
-                "nets": [toJson(n) for n in la.nets]}
+        n2j = self.LNode_toJson
+        e2j = self.LEdge_toJson
+        return {"nodes": [n2j(n) for n in la.nodes],
+                "edges": [e2j(n) for n in la.nets]}
 
     def GeometryRect_toJson(self, gr):
         return {

@@ -1,7 +1,7 @@
 from typing import List
 
 from layeredGraphLayouter.containers.constants import PortSide, NodeType
-from layeredGraphLayouter.containers.lGraph import Layout, LNodeLayer
+from layeredGraphLayouter.containers.lGraph import LGraph, LNodeLayer
 from layeredGraphLayouter.crossing.crossingCounter import CrossingsCounter
 from layeredGraphLayouter.crossing.hyperedgeCrossingsCounter import HyperedgeCrossingsCounter
 
@@ -13,7 +13,7 @@ class AllCrossingsCounter():
     Counts all crossings in a graph.
     """
 
-    def __init__(self, graph: Layout):
+    def __init__(self, graph: LGraph):
         inLayerEdgeCounts = self.inLayerEdgeCounts = [0 for _ in graph.layers]
         hasNorthSouthPorts = self.hasNorthSouthPorts = [
             False for _ in graph.layers]

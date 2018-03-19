@@ -1,6 +1,6 @@
 from layeredGraphLayouter.containers.geometry import GeometryRect
 from layeredGraphLayouter.containers.lEdge import LEdge
-from layeredGraphLayouter.containers.lGraph import Layout
+from layeredGraphLayouter.containers.lGraph import LGraph
 from layeredGraphLayouter.containers.lNode import LNode, LayoutExternalPort
 from layeredGraphLayouter.containers.lPort import LPort
 from layeredGraphLayouter.containers.sizeConfig import PORT_HEIGHT
@@ -61,7 +61,7 @@ class ToSvg():
             LNode: self.LNode_toSvg,
             LEdge: self.LEdge_toSvg,
             LayoutExternalPort: self.LayoutExternalPort_toSvg,
-            Layout: self.Layout_toSvg,
+            LGraph: self.LGraph_toSvg,
         }
 
     def LPort_coordinates(self, lp: LPort):
@@ -115,7 +115,7 @@ class ToSvg():
 
         yield svg_line(points, stroke=stroke)
 
-    def Layout_toSvg(self, la: Layout) -> etree.Element:
+    def LGraph_toSvg(self, la: LGraph) -> etree.Element:
         svg = etree.Element("svg", {
             "width": str(la.width),
             "height": str(la.height),

@@ -1,6 +1,6 @@
 from layeredGraphLayouter.containers.geometry import GeometryRect
 from layeredGraphLayouter.containers.lEdge import LEdge
-from layeredGraphLayouter.containers.lGraph import Layout
+from layeredGraphLayouter.containers.lGraph import LGraph
 from layeredGraphLayouter.containers.lNode import LNode, LayoutExternalPort
 from layeredGraphLayouter.containers.lPort import LPort
 from layeredGraphLayouter.containers.sizeConfig import PORT_HEIGHT, UNIT_HEADER_OFFSET
@@ -35,7 +35,7 @@ class ToMxGraph():
             LNode: self.LNode_toMxGraph,
             LEdge: self.LEdge_toMxGraph,
             LayoutExternalPort: self.LayoutExternalPort_toMxGraph,
-            Layout: self.Layout_toMxGraph,
+            LGraph: self.LGraph_toMxGraph,
             GeometryRect: self.GeometryRect_toMxGraph
         }
 
@@ -132,7 +132,7 @@ class ToMxGraph():
                  "relative": "1", "as": "geometry"}))
         yield c
 
-    def Layout_toMxGraph(self, la) -> etree.Element:
+    def LGraph_toMxGraph(self, la) -> etree.Element:
         gm = etree.Element("mxGraphModel", {
             "dx": "0",
             "dy": "0",

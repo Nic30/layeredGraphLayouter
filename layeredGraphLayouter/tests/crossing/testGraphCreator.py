@@ -1,6 +1,6 @@
 from random import Random
 from typing import List, Union
-from layeredGraphLayouter.containers.lGraph import Layout, LNodeLayer
+from layeredGraphLayouter.containers.lGraph import LGraph, LNodeLayer
 from layeredGraphLayouter.containers.constants import EdgeRouting, PortSide, PortConstraints,\
     NodeType
 from layeredGraphLayouter.containers.lNode import LNode
@@ -47,29 +47,29 @@ class TestGraphCreator():
         self.nodeId = 0
         self.edgeId = 0
         self.random = MockRandom()
-        self.graph = Layout()
+        self.graph = LGraph()
         self.setUpGraph(self.graph)
 
     def getGraph(self, graph):
         self.setUpGraph(graph)
         return graph
 
-    def setUpGraph(self, g: Layout):
+    def setUpGraph(self, g: LGraph):
         g.edgeRouting = EdgeRouting.ORTHOGONAL
         g.random = self.random
         return g
 
-    def getEmptyGraph(self) -> Layout:
+    def getEmptyGraph(self) -> LGraph:
         """
         Creates empty graph.
 
         :return: empty graph
         """
-        graph = Layout()
+        graph = LGraph()
         self.setUpGraph(graph)
         return graph
 
-    def getTwoNodesNoConnectionGraph(self) -> Layout:
+    def getTwoNodesNoConnectionGraph(self) -> LGraph:
         """
         Creates two nodes with no connection between them.
 
@@ -105,7 +105,7 @@ class TestGraphCreator():
         self.eastWestEdgeFromTo(bottomLeft, topRight)
         return self.graph
 
-    def multipleEdgesAndSingleEdge(self) -> Layout:
+    def multipleEdgesAndSingleEdge(self) -> LGraph:
         """
         <pre>
         *
@@ -1002,7 +1002,7 @@ class TestGraphCreator():
      * @return
      """
 
-    def getCurrentOrder(self, g: Layout):
+    def getCurrentOrder(self, g: LGraph):
         nodeOrder = []
         for nodes in g.layers:
             nodeOrder.append(nodes[:])
@@ -1059,7 +1059,7 @@ class TestGraphCreator():
         return self.makeLayerInGraph(self.graph)
 
     @staticmethod
-    def makeLayerInGraph(g: Layout):
+    def makeLayerInGraph(g: LGraph):
         layer = LNodeLayer(g)
         return layer
 
@@ -1197,7 +1197,7 @@ class TestGraphCreator():
         node.compoundNode = True
         nestedGraph = node.nestedLgraph
         if (nestedGraph is None):
-            nestedGraph = Layout()
+            nestedGraph = LGraph()
             self.setUpGraph(nestedGraph)
             node.nestedLgraph = nestedGraph
             nestedGraph.parentLnode = node
@@ -1325,7 +1325,7 @@ class TestGraphCreator():
         node.portConstraints = PortConstraints.FIXED_ORDER
         node.getGraph().p_nonFreePorts = True
 
-    def makeLayersInGraph(self, amount: int, g: Layout):
+    def makeLayersInGraph(self, amount: int, g: LGraph):
         return [self.makeLayerInGraph(g) for _ in range(amount)]
 
     def addInLayerEdge_NodeNodeSide(self, nodeOne: LNode, nodeTwo: LNode, portSide: PortSide):
