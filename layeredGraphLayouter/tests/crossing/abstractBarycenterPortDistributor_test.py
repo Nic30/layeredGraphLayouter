@@ -151,7 +151,7 @@ class AbstractBarycenterPortDistributorTC(unittest.TestCase):
         IInitializable.init(Arrays.asList(portDist), nodeArray)
         portDist.distributePortsWhileSweeping(nodeArray, 1, True)
 
-        assertThat(rightNode.getPorts(), is(expectedPortRightNode))
+        self.assertSequenceEqual(rightNode.getPorts(), expectedPortRightNode)
 
     # TODO this is a problem which currently cannot be solved by our algorithm :-(
     #def distributePortsOnSide_partlyCrossHierarchicalEdges_CrossHierarchyStaysOuterChanges(self):
