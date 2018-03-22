@@ -2,6 +2,9 @@ import unittest
 
 from layeredGraphLayouter.tests.crossing.testGraphCreator import TestGraphCreator
 from layeredGraphLayouter.containers.constants import PortSide
+from layeredGraphLayouter.crossing.graphInfoHolder import GraphInfoHolder
+from layeredGraphLayouter.crossing.barycenterHeuristic import BarycenterHeuristic
+from layeredGraphLayouter.crossing.nodeRelativePortDistributor import NodeRelativePortDistributor
 
 
 class AbstractBarycenterPortDistributorTC(unittest.TestCase):
@@ -58,13 +61,13 @@ class AbstractBarycenterPortDistributorTC(unittest.TestCase):
 
     def distributePortsInCompleteGraph(self, numberOfPorts: int):
         gb = self.gb
-        gd = GraphInfoHolder(gb.graph, CrossMinType.BARYCENTER, None)
-        nodes = gb.graph.leyers
+        gd = GraphInfoHolder(gb.graph, BarycenterHeuristic, NodeRelativePortDistributor, None)
+        nodes = gb.graph.layers
         for i in range(len(nodes)):
-            gd.portDistributor().distributePortsWhileSweeping(nodes, i, True)
+            gd. portDistributor.distributePortsWhileSweeping(nodes, i, True)
 
         for i in range(0, len(nodes) - 1, -1):
-            gd.portDistributor().distributePortsWhileSweeping(nodes, i, False)
+            gd. portDistributor.distributePortsWhileSweeping(nodes, i, False)
 
     def test_distributePortsOfGraph_GivenCrossOnEasternSide_ShouldRemoveCrossing(self):
         """

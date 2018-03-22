@@ -12,6 +12,7 @@ from layeredGraphLayouter.crossing.dummyPortDistributor import DummyPortDistribu
 from layeredGraphLayouter.crossing.forsterConstraintResolver import ForsterConstraintResolver
 from layeredGraphLayouter.crossing.nodeRelativePortDistributor import NodeRelativePortDistributor
 from layeredGraphLayouter.crossing.sweepCopy import SweepCopy
+from layeredGraphLayouter.crossing.graphInfoHolder import GraphInfoHolder
 
 
 def firstFree(isForwardSweep, length):
@@ -101,8 +102,8 @@ class LayerSweepCrossingMinimizer():
         layers = graph.layers
         self.randomSeed = 0
         self.random = Random(self.randomSeed)
-
         self.graphsWhoseNodeOrderChanged = set()
+        self.graphInfoHolders = {}
 
         emptyGraph = not layers or sum(len(l) for l in layers) == 0
         singleNode = len(layers) == 1 and len(layers[0]) == 1
@@ -115,31 +116,14 @@ class LayerSweepCrossingMinimizer():
 
         graphsToSweepOn = [graph, ]
 
-        constraintResolver = ForsterConstraintResolver(graph.layers)
-
         for g in graphsToSweepOn:
-            for name in ["crossMinimizer", "currentNodeOrder", "portDistributor",
-                         "crossCounter", "currentlyBestNodeAndPortOrder"]:
-                assert not hasattr(g, name)
-            g.currentlyBestNodeAndPortOrder = None
-            #g.portDistributor = NodeRelativePortDistributor(g)
-            g.portDistributor = DummyPortDistributor(g.layers)
-            g.crossMinimizer = BarycenterHeuristic(
-                constraintResolver, self.random, g.portDistributor,
-                g.layers)
-            g.currentNodeOrder = SweepCopy(g.layers)
-            g.inLayerSuccessorConstraint = []
-            g.crossCounter = AllCrossingsCounter(g)
+            self.graphInfoHolders[g] = GraphInfoHolder(g, BarycenterHeuristic,
+                                                       DummyPortDistributor,
+                                                       self.graphInfoHolders)
 
         minimizingMethod = self.chooseMinimizingMethod(graphsToSweepOn)
         self.minimizeCrossings(graphsToSweepOn, minimizingMethod)
         self.transferNodeAndPortOrdersToGraph(graphsToSweepOn)
-
-        for g in graphsToSweepOn:
-            del g.crossMinimizer
-            del g.currentNodeOrder
-            del g.portDistributor
-            del g.currentlyBestNodeAndPortOrder
 
     def chooseMinimizingMethod(self, graphsToSweepOn):
         parent = graphsToSweepOn[0]

@@ -41,7 +41,8 @@ class AbstractBarycenterPortDistributor():
      *            the number of layers in the graph.
     """
 
-    def __init__(self, graph):
+    def __init__(self, random, graph):
+        self.random = random
         r = self.portRanks = {}
         self.minBarycenter = inf
         self.maxBarycenter = 0.0
@@ -65,7 +66,6 @@ class AbstractBarycenterPortDistributor():
         distributePorts_side = self.distributePorts_side
 
         if isNotFirstLayer(len(nodeOrder), currentIndex, isForwardSweep):
-
             fixedLayer = currentIndex - \
                 1 if isForwardSweep else nodeOrder[currentIndex + 1]
             self.calculatePortRanks(fixedLayer, portTypeFor(isForwardSweep))
@@ -94,9 +94,9 @@ class AbstractBarycenterPortDistributor():
          * @param portType
          *            the port type to consider
         """
+        assert isinstance(layer, LNodeLayer), layer
         calculatePortRanks = self.calculatePortRanks
         consumedRank = 0
-        assert isinstance(layer, LNodeLayer), layer
         for node in layer:
             consumedRank += calculatePortRanks(node, consumedRank, portType)
 
