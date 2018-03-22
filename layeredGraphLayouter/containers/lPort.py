@@ -32,6 +32,14 @@ class LPort():
         self.portDummy = None
         self.insideConnections = False
 
+    def getDegree(self) -> int:
+        """
+        Returns this port's degree, that is, the number of edges connected to it.
+
+        @return the number of edges connected to this port.
+        """
+        return len(self.incomingEdges) + len(self.outgoingEdges)
+
     def getNode(self):
         p = self
         while True:

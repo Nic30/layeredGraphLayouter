@@ -33,6 +33,11 @@ class GraphInfoHolder():
         self.hasParent = self.parent is not None
         self.parentGraphData = graphs[self.parent.graph] if self.hasParent else None
         self.hasExternalPorts = graph.p_externalPorts
+        self.childGraphs = []
+        for layer in graph.layers:
+            for node in layer:
+                if node.nestedLgraph is not None:
+                    self.childGraphs.append(node.nestedLgraph)
 
         # Init all objects needing initialization by graph traversal.
         self.crossingsCounter = AllCrossingsCounter(self.lGraph)

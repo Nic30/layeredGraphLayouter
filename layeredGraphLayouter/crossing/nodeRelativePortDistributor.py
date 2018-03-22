@@ -23,7 +23,7 @@ class NodeRelativePortDistributor(AbstractBarycenterPortDistributor):
             incr = 1.0 / (inputCount + 1)
             northPos = rankSum + northInputCount * incr
             restPos = rankSum + 1 - incr
-            for port in node.getPorts(PortType.INPUT):
+            for port in node.getPortsByType(PortType.INPUT):
                 if port.side == PortSide.NORTH:
                     portRanks[port] = northPos
                     northPos -= incr
@@ -42,7 +42,7 @@ class NodeRelativePortDistributor(AbstractBarycenterPortDistributor):
             # - south - west
             incr = 1.0 / (outputCount + 1)
             pos = rankSum + incr
-            for port in node.getPorts(PortType.OUTPUT):
+            for port in node.getPortsByType(PortType.OUTPUT):
                 portRanks[port] = pos
                 pos += incr
 

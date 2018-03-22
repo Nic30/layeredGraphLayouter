@@ -114,37 +114,39 @@ class LayerSweepCrossingMinimizer():
         if emptyGraph or (singleNode and not hierarchicalLayout):
             return
 
-        graphsToSweepOn = [graph, ]
+        _graphsToSweepOn = [graph, ]
+        graphsToSweepOn = []
+        for g in _graphsToSweepOn:
+            g.random = self.random
+            gih = self.graphInfoHolders[g] = GraphInfoHolder(g, BarycenterHeuristic,
+                                                             DummyPortDistributor,
+                                                             self.graphInfoHolders)
+            graphsToSweepOn.append(gih)
 
-        for g in graphsToSweepOn:
-            self.graphInfoHolders[g] = GraphInfoHolder(g, BarycenterHeuristic,
-                                                       DummyPortDistributor,
-                                                       self.graphInfoHolders)
-
-        minimizingMethod = self.chooseMinimizingMethod(graphsToSweepOn)
+        root = self.graphInfoHolders[graph]
+        minimizingMethod = self.chooseMinimizingMethod(root)
         self.minimizeCrossings(graphsToSweepOn, minimizingMethod)
         self.transferNodeAndPortOrdersToGraph(graphsToSweepOn)
 
-    def chooseMinimizingMethod(self, graphsToSweepOn):
-        parent = graphsToSweepOn[0]
-        if not parent.crossMinimizer.isDeterministic:
+    def chooseMinimizingMethod(self, root: GraphInfoHolder):
+        if not root.crossMinimizer.isDeterministic:
             return self.compareDifferentRandomizedLayouts
-        elif parent.crossMinAlwaysImproves:
+        elif root.crossMinAlwaysImproves:
             return self.minimizeCrossingsNoCounter
         else:
             return self.minimizeCrossingsWithCounter
 
-    def compareDifferentRandomizedLayouts(self, gData: LGraph):
+    def compareDifferentRandomizedLayouts(self, gData: GraphInfoHolder):
         # Reset the seed, otherwise copies of hierarchical
         # graphs in different parent nodes are layouted differently.
-        self.random = Random(self.randomSeed)
+        self.random.seed(self.randomSeed)
 
         # In order to only copy graphs whose node order has changed,
         # save them in a set.
         self.graphsWhoseNodeOrderChanged.clear()
 
         bestCrossings = inf
-        thouroughness = gData.thoroughness
+        thouroughness = gData.lGraph.thoroughness
         for _ in range(thouroughness):
             crossings = self.minimizeCrossingsWithCounter(gData)
             if crossings < bestCrossings:
@@ -168,7 +170,7 @@ class LayerSweepCrossingMinimizer():
         countCrossingsIn.append(currentGraph)
         while countCrossingsIn:
             gD = countCrossingsIn.pop()
-            totalCrossings += gD.crossCounter.countAllCrossings(
+            totalCrossings += gD.crossingsCounter.countAllCrossings(
                 gD.currentNodeOrder)
             for child in gD.childGraphs:
                 if child.dontSweepInto():
@@ -199,7 +201,7 @@ class LayerSweepCrossingMinimizer():
 
         return oldNumberOfCrossings
 
-    def minimizeCrossings(self, graphsToSweepOn: List[LGraph], minimizingMethod):
+    def minimizeCrossings(self, graphsToSweepOn: List[GraphInfoHolder], minimizingMethod):
         for gData in graphsToSweepOn:
             if gData.currentNodeOrder:
                 minimizingMethod(gData)
@@ -234,7 +236,7 @@ class LayerSweepCrossingMinimizer():
                 j += next(onRightMostLayer)
 
     @staticmethod
-    def getBestSweep(graph):
+    def getBestSweep(graph: GraphInfoHolder):
         if graph.crossMinimizer.isDeterministic:
             return graph.currentlyBestNodeAndPortOrder
         else:

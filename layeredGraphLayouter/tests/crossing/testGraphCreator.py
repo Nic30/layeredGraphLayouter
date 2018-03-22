@@ -1238,8 +1238,9 @@ class TestGraphCreator():
     @staticmethod
     def copyPortsInIndexOrder(node: LNode, *indices):
         res = []
+        ports = list(node.iterPorts())
         for i in indices:
-            res.append(node.getPorts().get(i))
+            res.append(ports[i])
 
         return res
 

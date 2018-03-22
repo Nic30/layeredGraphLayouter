@@ -1,12 +1,12 @@
-from layeredGraphLayouter.containers.lGraph import LNodeLayer
+from layeredGraphLayouter.containers.lGraph import LGraph, LNodeLayer
 from layeredGraphLayouter.containers.constants import PortType
 
 
 class DummyPortDistributor():
 
-    def __init__(self, layers: LNodeLayer):
+    def __init__(self, random, graph: LGraph):
         pr = self.portRanks = {}
-        for la in layers:
+        for la in graph.layers:
             for n in la:
                 for i, p in enumerate(n.iterPorts()):
                     pr[p] = i

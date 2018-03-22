@@ -31,7 +31,7 @@ class BarycenterHeuristicTest(unittest.TestCase):
         gb.eastWestEdgeFromTo(leftNodes[1], rightNodes[0])
         nodes = gb.graph.layers
 
-        portDist = NodeRelativePortDistributor(gb.graph)
+        portDist = NodeRelativePortDistributor(gb.random, gb.graph)
         constraintResolver = ForsterConstraintResolver(nodes)
 
         portDist.calculatePortRanks_many(nodes[0], PortType.OUTPUT)
@@ -62,7 +62,7 @@ class BarycenterHeuristicTest(unittest.TestCase):
         gb.eastWestEdgeFromTo(leftNodes[1], rightNodes[0])
 
         nodes = gb.graph.layers
-        portDist = NodeRelativePortDistributor(gb.graph)
+        portDist = NodeRelativePortDistributor(gb.random, gb.graph)
         constraintResolver = ForsterConstraintResolver(nodes)
         portDist.calculatePortRanks_many(nodes[0], PortType.OUTPUT)
         crossMin = BarycenterHeuristic(
@@ -103,7 +103,7 @@ class BarycenterHeuristicTest(unittest.TestCase):
         expectedSwitchedOrder = gb.switchOrderInArray(0, 1, layers[2])
         expectedOrderSecondLayer = layers[1][:]
 
-        portDist = NodeRelativePortDistributor(gb.graph)
+        portDist = NodeRelativePortDistributor(gb.random, gb.graph)
         constraintResolver = ForsterConstraintResolver(layers)
 
         crossMin = BarycenterHeuristic(
@@ -144,7 +144,7 @@ class BarycenterHeuristicTest(unittest.TestCase):
 
         nodes = gb.graph.layers
 
-        portDist = NodeRelativePortDistributor(gb.graph)
+        portDist = NodeRelativePortDistributor(gb.random, gb.graph)
         constraintResolver = ForsterConstraintResolver(nodes)
 
         portDist.calculatePortRanks_many(nodes[0], PortType.OUTPUT)
@@ -182,7 +182,7 @@ class BarycenterHeuristicTest(unittest.TestCase):
 
         layers = gb.graph.layers
 
-        portDist = NodeRelativePortDistributor(gb.graph)
+        portDist = NodeRelativePortDistributor(gb.random, gb.graph)
         constraintResolver = ForsterConstraintResolver(layers)
 
         portDist.calculatePortRanks_many(layers[1], PortType.INPUT)
@@ -219,7 +219,7 @@ class BarycenterHeuristicTest(unittest.TestCase):
         gb.eastWestEdgeFromTo(leftNode, rightNodes[1])
         layers = gb.graph.layers
 
-        portDist = NodeRelativePortDistributor(gb.graph)
+        portDist = NodeRelativePortDistributor(gb.random, gb.graph)
         constraintResolver = ForsterConstraintResolver(layers)
 
         portDist.calculatePortRanks_many(layers[0], PortType.INPUT)
@@ -263,7 +263,7 @@ class BarycenterHeuristicTest(unittest.TestCase):
                 if layoutUnit is not None:
                     layoutUnits[layoutUnit].append(node)
 
-        portDist = NodeRelativePortDistributor(gb.graph)
+        portDist = NodeRelativePortDistributor(gb.random, gb.graph)
         constraintResolver = ForsterConstraintResolver(layers)
 
         portDist.calculatePortRanks_many(layers[0], PortType.INPUT)
