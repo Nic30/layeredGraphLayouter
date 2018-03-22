@@ -1090,17 +1090,9 @@ class TestGraphCreator():
         :param portSide:
         :return: newly created port
         """
-        port = LPort(node, "port", None, side=portSide)
-        if portSide == PortSide.EAST:
-            node.east.append(port)
-        elif portSide == PortSide.NORTH:
-            node.north.append(port)
-        elif portSide == PortSide.SOUTH:
-            node.south.append(port)
-        elif portSide == PortSide.WEST:
-            node.west.append(port)
-        else:
-            raise NotImplementedError(portSide)
+        side = node.getPortSideView(portSide)
+        port = LPort(node, "port%d" % len(side), None, side=portSide)
+        side.append(port)
 
         if not node.portConstraints.isSideFixed():
             node.portConstraints = PortConstraints.FIXED_SIDE

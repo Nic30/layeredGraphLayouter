@@ -12,6 +12,7 @@ There are different ways to determine port ranks, therefore that is done in conc
 Must be initialized using {@link IInitializable#init(List, LNode[][]).
 """
 from math import inf
+from collections import defaultdict
 
 from layeredGraphLayouter.containers.constants import PortType, PortSide
 from layeredGraphLayouter.containers.lGraph import LNodeLayer
@@ -53,7 +54,7 @@ class AbstractBarycenterPortDistributor():
                 for p in node.iterPorts():
                     r[p] = 0
 
-        self.portBarycenter = {}
+        self.portBarycenter = defaultdict(int)
         self.inLayerPorts = {}
 
     # ######################################/
@@ -66,13 +67,15 @@ class AbstractBarycenterPortDistributor():
         distributePorts_side = self.distributePorts_side
 
         if isNotFirstLayer(len(nodeOrder), currentIndex, isForwardSweep):
-            fixedLayer = currentIndex - \
-                1 if isForwardSweep else nodeOrder[currentIndex + 1]
-            self.calculatePortRanks(fixedLayer, portTypeFor(isForwardSweep))
+            if isForwardSweep:
+                fixedLayer = nodeOrder[currentIndex - 1]
+            else:
+                fixedLayer = nodeOrder[currentIndex + 1]
+            self.calculatePortRanks_many(fixedLayer, portTypeFor(isForwardSweep))
             for node in freeLayer:
                 distributePorts_side(node, side)
 
-            self.calculatePortRanks(freeLayer, portTypeFor(not isForwardSweep))
+            self.calculatePortRanks_many(freeLayer, portTypeFor(not isForwardSweep))
             for node in fixedLayer:
                 if not hasNestedGraph(node):
                     distributePorts_side(node, PortSide.opposite(side))

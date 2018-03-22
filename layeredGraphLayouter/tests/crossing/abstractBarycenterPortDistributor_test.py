@@ -26,12 +26,12 @@ class AbstractBarycenterPortDistributorTC(unittest.TestCase):
         gb.eastWestEdgeFromTo(leftNodes[0], rightNode)
         gb.eastWestEdgeFromTo(leftNodes[1], rightNode)
 
-        _nodes = list(rightNode.iterPorts())
-        expectedPortOrderRightNode = [_nodes[1], _nodes[0]]
+        _ports = rightNode.west
+        expectedPortOrderRightNode = [_ports[1], _ports[0]]
 
         self.distributePortsInCompleteGraph(4)
 
-        self.assertSequenceEqual(rightNode, expectedPortOrderRightNode)
+        self.assertSequenceEqual(rightNode.west, expectedPortOrderRightNode)
 
     def test_distributePortsOfGraph_GivenCrossOnBothSides_ShouldRemoveCrossin(self):
         """
