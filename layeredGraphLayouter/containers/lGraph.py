@@ -34,6 +34,7 @@ class LGraph():
         self.random = None
 
         self.thoroughness = 1
+        self.crossingMinimizationHierarchicalSweepiness = 1
 
         # The graph contains comment boxes.
         self.p_comments = False
