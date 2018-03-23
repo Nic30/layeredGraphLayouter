@@ -1325,7 +1325,7 @@ class TestGraphCreator():
     def addInLayerEdge_NodeNodeSide(self, nodeOne: LNode, nodeTwo: LNode, portSide: PortSide):
         portOne = self.addPortOnSide(nodeOne, portSide)
         portTwo = self.addPortOnSide(nodeTwo, portSide)
-        self.addEdgeBetweenPorts(portOne, portTwo)
+        return self.addEdgeBetweenPorts(portOne, portTwo)
 
     def addInLayerEdge_NodePortSide(self, nodeOne: LNode, portTwo: LPort, portSide: PortSide):
         portOne = self.addPortOnSide(nodeOne, portSide)

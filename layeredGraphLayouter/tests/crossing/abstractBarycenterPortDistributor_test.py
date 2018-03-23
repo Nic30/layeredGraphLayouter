@@ -139,12 +139,12 @@ class AbstractBarycenterPortDistributorTC(unittest.TestCase):
         self.assertSequenceEqual(
             list(leftNodes[2].iterPorts()), expectedPortOrderLowerNode)
 
-    # def test_distributePortsWhileSweeping_givenSimpleCross_ShouldRemoveCrossing(self):
+    #def test_distributePortsWhileSweeping_givenSimpleCross_ShouldRemoveCrossing(self):
     #    """
-    #     * ___  ____
-    #     * | |\/|  |
-    #     * |_|/\|  |
-    #     *      |--|
+    #     ___  ____
+    #     | |\/|  |
+    #     |_|/\|  |
+    #          |--|
     #    """
     #    gb = self.gb
     #
@@ -158,7 +158,7 @@ class AbstractBarycenterPortDistributorTC(unittest.TestCase):
     #    portDist.distributePortsWhileSweeping(nodeArray, 1, True)
     #
     #    self.assertSequenceEqual(list(rightNode.getPorts()),
-    #                             expectedPortRightNode)
+    #                            expectedPortRightNode)
     #
     # TODO this is a problem which currently cannot be solved by our algorithm :-(
     # def distributePortsOnSide_partlyCrossHierarchicalEdges_CrossHierarchyStaysOuterChanges(self):
