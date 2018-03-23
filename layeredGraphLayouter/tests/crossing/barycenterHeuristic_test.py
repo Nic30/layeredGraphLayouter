@@ -6,10 +6,10 @@ from layeredGraphLayouter.containers.lGraph import LNodeLayer
 from layeredGraphLayouter.crossing.barycenterHeuristic import BarycenterHeuristic
 from layeredGraphLayouter.crossing.forsterConstraintResolver import ForsterConstraintResolver
 from layeredGraphLayouter.crossing.nodeRelativePortDistributor import NodeRelativePortDistributor
-from layeredGraphLayouter.tests.crossing.testGraphCreator import TestGraphCreator
+from layeredGraphLayouter.tests.testGraphCreator import TestGraphCreator
 
 
-class BarycenterHeuristicTest(unittest.TestCase):
+class BarycenterHeuristicTC(unittest.TestCase):
     def setUp(self):
         self.gb = TestGraphCreator()
         self.random = self.gb.random
@@ -118,15 +118,10 @@ class BarycenterHeuristicTest(unittest.TestCase):
 
     def test_assumingFixedPortOrder_givenSimplePortOrderCross_removesCrossingIndependentOfRandom(self):
         """
-         * <pre>
-         * ____  *
-         * |  |\/
-         * |__|/\
-         *       *
-         * .
-         * </pre>
-         *
-         * @return Graph of the form above.
+        ____  *
+        |  |\/
+        |__|/\
+              *
         """
         gb = self.gb
         leftLayer = gb.makeLayer()
@@ -292,6 +287,6 @@ class BarycenterHeuristicTest(unittest.TestCase):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(FrameTmplTC('test_sWithStartPadding'))
-    suite.addTest(unittest.makeSuite(BarycenterHeuristicTest))
+    suite.addTest(unittest.makeSuite(BarycenterHeuristicTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

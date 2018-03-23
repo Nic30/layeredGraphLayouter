@@ -235,16 +235,9 @@ class LayerSweepCrossingMinimizer():
                 ports[i] = lastLayer[j].origin
                 j += next(onRightMostLayer)
 
-    @staticmethod
-    def getBestSweep(graph: GraphInfoHolder):
-        if graph.crossMinimizer.isDeterministic:
-            return graph.currentlyBestNodeAndPortOrder
-        else:
-            return graph.currentNodeOrder
-
     def transferNodeAndPortOrdersToGraph(self, graphsToSweepOn):
         for gD in graphsToSweepOn:
-            bestSweep = self.getBestSweep(gD)
+            bestSweep = gD.getBestSweep()
             if bestSweep is not None:
                 bestSweep.transferNodeAndPortOrdersToGraph(gD)
 

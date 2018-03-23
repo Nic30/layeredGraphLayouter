@@ -73,15 +73,13 @@ class LNode():
         indeg = 0
         outdeg = 0
         for p in self.iterPorts():
-            d = p.direction
-            for e in p.iterEdges():
-                if not e.isSelfLoop():
-                    if d == PortType.INPUT:
-                        indeg += 1
-                    elif d == PortType.OUTPUT:
-                        outdeg += 1
-                    else:
-                        raise TypeError(d)
+            for e in p.incomingEdges:
+                if not e.isSelfLoop:
+                    indeg += 1
+
+            for e in p.outgoingEdges:
+                if not e.isSelfLoop:
+                    outdeg += 1
 
         self.indeg = indeg
         self.outdeg = outdeg

@@ -3,6 +3,7 @@ import unittest
 
 from layeredGraphLayouter.containers.constants import PortSide
 from layeredGraphLayouter.crossing.crossingCounter import CrossingsCounter
+from layeredGraphLayouter.crossing.graphInfoHolder import GraphInfoHolder
 
 
 class CrossingsCounterTC(unittest.TestCase):
@@ -14,7 +15,7 @@ class CrossingsCounterTC(unittest.TestCase):
         # [TODO] has to be dict
         portOrder = [0 for _ in range(self.gb.getNumPorts(self.order()))]
         return portOrder
-        
+
     def test_countCrossingsBetweenLayers_fixedPortOrderCrossingOnTwoNodes(self):
         """
          * <pre>
@@ -29,12 +30,12 @@ class CrossingsCounterTC(unittest.TestCase):
         right = gb.addNodeToLayer(gb.makeLayer(gb.graph))
         gb.eastWestEdgeFromTo(left, right)
         gb.eastWestEdgeFromTo(left, right)
-        
+
         counter = CrossingsCounter(self.getInitPortOrder())
 
         order = self.order
-        self.assertEqual(counter.countCrossingsBetweenLayers(order()[0], order()[1]), 1)
-    
+        self.assertEqual(counter.countCrossingsBetweenLayers(
+            order()[0], order()[1]), 1)
 
     def test_longInLayerCrossings(self):
         """
@@ -62,8 +63,9 @@ class CrossingsCounterTC(unittest.TestCase):
 
         counter = CrossingsCounter(self.getInitPortOrder())
 
-        self.assertEqual(counter.countInLayerCrossingsOnSide(order()[0], PortSide.EAST), 1)
-    
+        self.assertEqual(counter.countInLayerCrossingsOnSide(
+            order()[0], PortSide.EAST), 1)
+
     def test_countCrossingsBetweenLayers_crossFormed(self):
         gb = self.gb
         gb.getCrossFormedGraph()
@@ -71,8 +73,9 @@ class CrossingsCounterTC(unittest.TestCase):
         counter = CrossingsCounter(self.getInitPortOrder())
 
         order = self.order
-        self.assertEqual(counter.countCrossingsBetweenLayers(order()[0], order()[1]), 1)
-    
+        self.assertEqual(counter.countCrossingsBetweenLayers(
+            order()[0], order()[1]), 1)
+
     def order(self):
         return self.gb.graph.layers
 
@@ -117,14 +120,16 @@ class CrossingsCounterTC(unittest.TestCase):
         gd.portDistributor().distributePortsWhileSweeping(order(), 1, True)
         counter = CrossingsCounter(self.getInitPortOrder())
 
-        self.assertEqual(counter.countCrossingsBetweenLayers(order()[0], order()[1]), 4)
-    
+        self.assertEqual(counter.countCrossingsBetweenLayers(
+            order()[0], order()[1]), 4)
+
     def test_countCrossingsBetweenLayers_crossWithExtraEdgeInBetween(self):
         gb = self.gb
         gb.getCrossWithExtraEdgeInBetweenGraph()
         counter = CrossingsCounter(self.getInitPortOrder())
         order = self.order
-        self.assertEqual(counter.countCrossingsBetweenLayers(order()[0], order()[1]), 3)
+        self.assertEqual(counter.countCrossingsBetweenLayers(
+            order()[0], order()[1]), 3)
 
     def test_countCrossingsBetweenLayers_ignoreSelfLoops(self):
         gb = self.gb
@@ -132,8 +137,9 @@ class CrossingsCounterTC(unittest.TestCase):
 
         gb.getCrossWithManySelfLoopsGraph()
         counter = CrossingsCounter(self.getInitPortOrder())
-        self.assertEqual(counter.countCrossingsBetweenLayers(order()[0], order()[1]), 1)
-    
+        self.assertEqual(counter.countCrossingsBetweenLayers(
+            order()[0], order()[1]), 1)
+
     def test_countCrossingsBetweenLayers_moreComplexThreeLayerGraph(self):
         gb = self.gb
         order = self.order
@@ -142,15 +148,16 @@ class CrossingsCounterTC(unittest.TestCase):
         gd = GraphInfoHolder(gb.graph, CrossMinType.BARYCENTER, None)
         gd.portDistributor().distributePortsWhileSweeping(order(), 1, True)
         counter = CrossingsCounter(self.getInitPortOrder())
-        self.assertEqual(counter.countCrossingsBetweenLayers(order()[0], order()[1]), 1)
-    
+        self.assertEqual(counter.countCrossingsBetweenLayers(
+            order()[0], order()[1]), 1)
+
     def test_countCrossingsBetweenLayers_fixedPortOrder(self):
         order = self.order
-        
+
         self.gb.getFixedPortOrderGraph()
         counter = CrossingsCounter(self.getInitPortOrder())
-        self.assertEqual(counter.countCrossingsBetweenLayers(order()[0], order()[1]), 1)
-    
+        self.assertEqual(counter.countCrossingsBetweenLayers(
+            order()[0], order()[1]), 1)
 
     def test_countCrossingsBetweenLayers_intoSamePort(self):
         """
@@ -166,24 +173,25 @@ class CrossingsCounterTC(unittest.TestCase):
 
         leftLayer = gb.makeLayer(gb.graph)
         rightLayer = gb.makeLayer(gb.graph)
-        
+
         topLeft = gb.addNodeToLayer(leftLayer)
         bottomLeft = gb.addNodeToLayer(leftLayer)
         topRight = gb.addNodeToLayer(rightLayer)
         bottomRight = gb.addNodeToLayer(rightLayer)
-        
+
         gb.eastWestEdgeFromTo(topLeft, bottomRight)
         bottomLeftFirstPort = gb.addPortOnSide(bottomLeft, PortSide.EAST)
-        bottomLeftSecondPort = gb.addEdgeBetweenPorts(bottomLeft, PortSide.EAST)
+        bottomLeftSecondPort = gb.addEdgeBetweenPorts(
+            bottomLeft, PortSide.EAST)
         topRightFirstPort = gb.addPortOnSide(topRight, PortSide.WEST)
-        
+
         gb.addEdgeBetweenPorts(bottomLeftFirstPort, topRightFirstPort)
         gb.addEdgeBetweenPorts(bottomLeftSecondPort, topRightFirstPort)
-        
+
         counter = CrossingsCounter(self.getInitPortOrder())
 
-        self.assertEqual(counter.countCrossingsBetweenLayers(order()[0], order()[1]), 2)
-    
+        self.assertEqual(counter.countCrossingsBetweenLayers(
+            order()[0], order()[1]), 2)
 
     def test_countCrossingsBetweenPorts_givenWesternCrossings_OnlyCountsForGivenPorts(self):
         """
@@ -206,8 +214,8 @@ class CrossingsCounterTC(unittest.TestCase):
         counter = CrossingsCounter(self.getInitPortOrder())
         counter.initForCountingBetween(leftNodes, rightNodes)
         self.assertEqual(counter.countCrossingsBetweenPortsInBothOrders(rightNodes[1].getPorts().get(1),
-                rightNodes[1].getPorts().get(0)).getFirst(), 1)
-    
+                                                                        rightNodes[1].getPorts().get(0)).getFirst(), 1)
+
     def test_countCrossingsBetweenPorts_GivenCrossingsOnEasternSide_(self):
         """
          * <pre>
@@ -225,9 +233,8 @@ class CrossingsCounterTC(unittest.TestCase):
         counter = CrossingsCounter(self.getInitPortOrder())
         counter.initForCountingBetween(leftNodes, rightNodes)
         self.assertEqual(counter
-                .countCrossingsBetweenPortsInBothOrders(leftNodes[0].getPorts().get(0), leftNodes[0].getPorts().get(1))
-                .getFirst(), 1)
-    
+                         .countCrossingsBetweenPortsInBothOrders(leftNodes[0].getPorts().get(0), leftNodes[0].getPorts().get(1))
+                         .getFirst(), 1)
 
     def test_countingTwoDifferentGraphs_DoesNotInterfereWithEachOther(self):
         """
@@ -252,15 +259,15 @@ class CrossingsCounterTC(unittest.TestCase):
         counter = CrossingsCounter(self.getInitPortOrder())
         counter.initForCountingBetween(leftNodes, rightNodes)
         self.assertEqual(counter
-                .countCrossingsBetweenPortsInBothOrders(leftNode.getPorts().get(0), leftNode.getPorts().get(1))
-                .getFirst(), 1)
+                         .countCrossingsBetweenPortsInBothOrders(leftNode.getPorts().get(0), leftNode.getPorts().get(1))
+                         .getFirst(), 1)
 
         counter.switchPorts(leftPorts[0], leftPorts[1])
         leftNode.getPorts().set(0, leftPorts[1])
         leftNode.getPorts().set(1, leftPorts[0])
         self.assertEqual(counter
-                .countCrossingsBetweenPortsInBothOrders(leftNode.getPorts().get(0), leftNode.getPorts().get(1))
-                .getFirst(), 0)
+                         .countCrossingsBetweenPortsInBothOrders(leftNode.getPorts().get(0), leftNode.getPorts().get(1))
+                         .getFirst(), 0)
 
     def test_countCrossingsBetweenPorts_twoEdgesIntoSamePort(self):
         """
@@ -277,29 +284,27 @@ class CrossingsCounterTC(unittest.TestCase):
 
         leftLayer = gb.makeLayer()
         rightLayer = gb.makeLayer()
-        
+
         topLeft = gb.addNodeToLayer(leftLayer)
         bottomLeft = gb.addNodeToLayer(leftLayer)
         topRight = gb.addNodeToLayer(rightLayer)
         bottomRight = gb.addNodeToLayer(rightLayer)
-        
+
         gb.eastWestEdgeFromTo(topLeft, bottomRight)
         bottomLeftPort = gb.addPortOnSide(bottomLeft, PortSide.EAST)
         topRightPort = gb.addPortOnSide(topRight, PortSide.WEST)
-        
+
         gb.addEdgeBetweenPorts(bottomLeftPort, topRightPort)
         gb.addEdgeBetweenPorts(bottomLeftPort, topRightPort)
-        
-        
+
         counter = CrossingsCounter(self.getInitPortOrder())
         counter.initForCountingBetween(order()[0], order()[1])
-        
+
         self.assertEqual(counter.countCrossingsBetweenPortsInBothOrders(bottomLeftPort, topLeft.getPorts().get(0)).getFirst(),
-                2)
-    
+                         2)
 
     #@Ignore
-    #def benchmark():
+    # def benchmark():
     #    makeTwoLayerRandomGraphWithNodesPerLayer(6000, 6)
     #
     #    counter = CrossingsCounter(self.getInitPortOrder())
@@ -310,7 +315,7 @@ class CrossingsCounterTC(unittest.TestCase):
     #        long tick = new Date().getTime()
     #        counter.countCrossingsBetweenLayers(order()[0], order()[1])
     #        times[i] = new Date().getTime() - tick
-    #    
+    #
     #    System.out.println(Arrays.stream(times).min())
     #
 
@@ -331,10 +336,10 @@ class CrossingsCounterTC(unittest.TestCase):
 
         for node in rightNodes:
             node.cachePortSides()
-        
+
         for node in leftNodes:
             node.cachePortSides()
-        
+
     @staticmethod
     def getNumPorts(currentOrder):
         numPorts = 0
@@ -342,4 +347,3 @@ class CrossingsCounterTC(unittest.TestCase):
             for node in lNodes:
                 numPorts += len(node.getPorts())
         return numPorts
-

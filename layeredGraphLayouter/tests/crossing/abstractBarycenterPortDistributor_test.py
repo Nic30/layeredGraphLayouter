@@ -1,6 +1,6 @@
 import unittest
 
-from layeredGraphLayouter.tests.crossing.testGraphCreator import TestGraphCreator
+from layeredGraphLayouter.tests.testGraphCreator import TestGraphCreator
 from layeredGraphLayouter.containers.constants import PortSide
 from layeredGraphLayouter.crossing.graphInfoHolder import GraphInfoHolder
 from layeredGraphLayouter.crossing.barycenterHeuristic import BarycenterHeuristic
