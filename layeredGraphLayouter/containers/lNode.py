@@ -63,6 +63,12 @@ class LNode():
     def iterPorts(self) -> Generator[LPort, None, None]:
         return chain(self.north, self.east, self.south, self.west)
 
+    def iterPortsReversed(self):
+        return chain(reversed(self.west),
+                     reversed(self.south),
+                     reversed(self.east),
+                     reversed(self.north))
+
     def iterSides(self):
         yield self.north
         yield self.east
