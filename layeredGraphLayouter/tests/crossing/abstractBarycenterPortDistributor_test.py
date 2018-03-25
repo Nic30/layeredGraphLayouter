@@ -1,6 +1,6 @@
 import unittest
 
-from layeredGraphLayouter.tests.crossing.testGraphCreator import TestGraphCreator
+from layeredGraphLayouter.tests.testGraphCreator import TestGraphCreator
 from layeredGraphLayouter.containers.constants import PortSide
 from layeredGraphLayouter.crossing.graphInfoHolder import GraphInfoHolder
 from layeredGraphLayouter.crossing.barycenterHeuristic import BarycenterHeuristic
@@ -13,12 +13,10 @@ class AbstractBarycenterPortDistributorTC(unittest.TestCase):
 
     def test_distributePortsOnSide_GivenCrossOnWesternSide_ShouldRemoveCrossing(self):
         """
-        <pre>
         *  ___
          \/| |
          /\| |
         *  |_|
-        </pre>
         """
         gb = self.gb
         leftNodes = gb.addNodesToLayer(2, gb.makeLayer())
@@ -35,13 +33,10 @@ class AbstractBarycenterPortDistributorTC(unittest.TestCase):
 
     def test_distributePortsOfGraph_GivenCrossOnBothSides_ShouldRemoveCrossin(self):
         """
-         * <pre>
-         * *  ___  *
-         *  \/| |\/
-         *  /\| |/\
-         * *  |_|  *
-         * </pre>
-         *
+        *  ___  *
+         \/| |\/
+         /\| |/\
+        *  |_|  *
         """
         gb = self.gb
 
@@ -53,111 +48,120 @@ class AbstractBarycenterPortDistributorTC(unittest.TestCase):
         gb.eastWestEdgeFromTo(leftNodes[0], middleNode)
         gb.eastWestEdgeFromTo(leftNodes[1], middleNode)
 
-        expectedPortOrderMiddleNode = gb.copyPortsInIndexOrder(middleNode, 1, 0, 3, 2)
+        expectedPortOrderMiddleNode = gb.copyPortsInIndexOrder(
+            middleNode, 1, 0, 3, 2)
 
-        gb.distributePortsInCompleteGraph(8)
+        self.distributePortsInCompleteGraph(8)
 
-        self.assertSequenceEqual(middleNode.getPorts(), expectedPortOrderMiddleNode)
+        self.assertSequenceEqual(list(middleNode.iterPorts()),
+                                 expectedPortOrderMiddleNode)
 
     def distributePortsInCompleteGraph(self, numberOfPorts: int):
         gb = self.gb
-        gd = GraphInfoHolder(gb.graph, BarycenterHeuristic, NodeRelativePortDistributor, None)
-        nodes = gb.graph.layers
-        for i in range(len(nodes)):
-            gd. portDistributor.distributePortsWhileSweeping(nodes, i, True)
+        gd = GraphInfoHolder(gb.graph, BarycenterHeuristic,
+                             NodeRelativePortDistributor, None)
+        layers = gb.graph.layers
+        for i in range(len(layers)):
+            gd.portDistributor.distributePortsWhileSweeping(layers, i, True)
 
-        for i in range(0, len(nodes) - 1, -1):
-            gd. portDistributor.distributePortsWhileSweeping(nodes, i, False)
+        for i in range(0, len(layers) - 1, -1):
+            gd.portDistributor.distributePortsWhileSweeping(layers, i, False)
 
     def test_distributePortsOfGraph_GivenCrossOnEasternSide_ShouldRemoveCrossing(self):
         """
-         * <pre>
-         * ___
-         * | |\ /-*
-         * | | x
-         * |_|/ \-*
-         * </pre>
+        ___
+        | |\ /-*
+        | | x
+        |_|/ \-*
         """
-        leftNode = addNodeToLayer(makeLayer(getGraph()))
-        rightNodes = addNodesToLayer(2, makeLayer(getGraph()))
-        eastWestEdgeFromTo(leftNode, rightNodes[1])
-        eastWestEdgeFromTo(leftNode, rightNodes[0])
+        gb = self.gb
 
-        expectedPortOrderLeftNode = copyPortsInIndexOrder(leftNode, 1, 0)
+        leftNode = gb.addNodeToLayer(gb.makeLayer())
+        rightNodes = gb.addNodesToLayer(2, gb.makeLayer())
+        gb.eastWestEdgeFromTo(leftNode, rightNodes[1])
+        gb.eastWestEdgeFromTo(leftNode, rightNodes[0])
 
-        distributePortsInCompleteGraph(4)
+        expectedPortOrderLeftNode = gb.copyPortsInIndexOrder(leftNode, 1, 0)
 
-        self.assertSequenceEqual(leftNode.iterPorts(), expectedPortOrderLeftNode)
+        self.distributePortsInCompleteGraph(4)
+
+        self.assertSequenceEqual(
+            list(leftNode.iterPorts()), expectedPortOrderLeftNode)
 
     def test_distributePortsOfGraph_GivenInLayerEdgePortOrderCrossing_ShouldRemoveIt(self):
         """
-         * <pre>
-         *     *-----
-         *     *-\  |
-         *   ____ | |
-         * * |  |-+--
-         *   |__|-|
-         * </pre>
+            *-----
+            *-\  |
+          ____ | |
+        * |  |-+--
+          |__|-|
         """
-        addNodeToLayer(makeLayer())
-        nodes = addNodesToLayer(3, makeLayer())
-        addInLayerEdge(nodes[0], nodes[2], PortSide.EAST)
-        addInLayerEdge(nodes[1], nodes[2], PortSide.EAST)
+        gb = self.gb
 
-        expectedPortOrderLowerNode = copyPortsInIndexOrder(nodes[2], 1, 0)
+        gb.addNodeToLayer(gb.makeLayer())
+        nodes = gb.addNodesToLayer(3, gb.makeLayer())
+        gb.addInLayerEdge(nodes[0], nodes[2], PortSide.EAST)
+        gb.addInLayerEdge(nodes[1], nodes[2], PortSide.EAST)
 
-        distributePortsInCompleteGraph(4)
+        expectedPortOrderLowerNode = gb.copyPortsInIndexOrder(nodes[2], 1, 0)
 
-        self.assertSequenceEqual(nodes[2].iterPorts(), expectedPortOrderLowerNode)
+        self.distributePortsInCompleteGraph(4)
+
+        self.assertSequenceEqual(list(nodes[2].iterPorts()),
+                                 expectedPortOrderLowerNode)
 
     def test_distributePortsOfGraph_GivenNorthSouthPortOrderCrossing_ShouldSwitchPortOrder(self):
         """
-         * <pre>
-         *     *-->*
-         *     |
-         *   *-+-->*
-         *   | |
-         *  _|_|_
-         *  |   |
-         *  |___|
-         *  .
-         * </pre>
+           *-->*
+           |
+         *-+-->*
+         | |
+        _|_|_
+        |   |
+        |___|
+        .
         """
-        leftNodes = addNodesToLayer(3, makeLayer())
-        rightNodes = addNodesToLayer(2, makeLayer())
+        gb = self.gb
 
-        addNorthSouthEdge(PortSide.NORTH, leftNodes[2], leftNodes[1], rightNodes[1], False)
-        addNorthSouthEdge(PortSide.NORTH, leftNodes[2], leftNodes[0], rightNodes[0], False)
+        leftNodes = gb.addNodesToLayer(3, gb.makeLayer())
+        rightNodes = gb.addNodesToLayer(2, gb.makeLayer())
 
-        expectedPortOrderLowerNode = Lists.newArrayList(leftNodes[2].getPorts().get(1), leftNodes[2].getPorts().get(0))
+        gb.addNorthSouthEdge(
+            PortSide.NORTH, leftNodes[2], leftNodes[1], rightNodes[1], False)
+        gb.addNorthSouthEdge(
+            PortSide.NORTH, leftNodes[2], leftNodes[0], rightNodes[0], False)
 
-        distributePortsInCompleteGraph(6)
+        _ports = list(leftNodes[2].iterPorts())
+        expectedPortOrderLowerNode = [_ports[1], _ports[0]]
 
-        self.assertSequenceEqual(leftNodes[2].iterPorts(), expectedPortOrderLowerNode)
+        self.distributePortsInCompleteGraph(6)
 
-    def test_distributePortsWhileSweeping_givenSimpleCross_ShouldRemoveCrossing(self):
-        """
-         * <pre>
-         * ___  ____
-         * | |\/|  |
-         * |_|/\|  |
-         *      |--|
-         * </pre>
-        """
-        leftNode = addNodeToLayer(makeLayer())
-        rightNode = addNodeToLayer(makeLayer())
-        eastWestEdgeFromTo(leftNode, rightNode)
-        eastWestEdgeFromTo(leftNode, rightNode)
-        expectedPortRightNode = copyPortsInIndexOrder(rightNode, 1, 0)
-        nodeArray = graph.toNodeArray()
-        portDist = LayerTotalPortDistributor(len(nodeArray))
-        IInitializable.init(Arrays.asList(portDist), nodeArray)
-        portDist.distributePortsWhileSweeping(nodeArray, 1, True)
+        self.assertSequenceEqual(
+            list(leftNodes[2].iterPorts()), expectedPortOrderLowerNode)
 
-        self.assertSequenceEqual(rightNode.getPorts(), expectedPortRightNode)
-
+    # def test_distributePortsWhileSweeping_givenSimpleCross_ShouldRemoveCrossing(self):
+    #    """
+    #     * ___  ____
+    #     * | |\/|  |
+    #     * |_|/\|  |
+    #     *      |--|
+    #    """
+    #    gb = self.gb
+    #
+    #    leftNode = gb.addNodeToLayer(gb.makeLayer())
+    #    rightNode = gb.addNodeToLayer(gb.makeLayer())
+    #    gb.eastWestEdgeFromTo(leftNode, rightNode)
+    #    gb.eastWestEdgeFromTo(leftNode, rightNode)
+    #    expectedPortRightNode = gb.copyPortsInIndexOrder(rightNode, 1, 0)
+    #    nodeArray = gb.graph.layers
+    #    portDist = LayerTotalPortDistributor(len(nodeArray))
+    #    portDist.distributePortsWhileSweeping(nodeArray, 1, True)
+    #
+    #    self.assertSequenceEqual(list(rightNode.getPorts()),
+    #                             expectedPortRightNode)
+    #
     # TODO this is a problem which currently cannot be solved by our algorithm :-(
-    #def distributePortsOnSide_partlyCrossHierarchicalEdges_CrossHierarchyStaysOuterChanges(self):
+    # def distributePortsOnSide_partlyCrossHierarchicalEdges_CrossHierarchyStaysOuterChanges(self):
     #   """
     #    * <pre>
     #    * ____
@@ -195,8 +199,7 @@ class AbstractBarycenterPortDistributorTC(unittest.TestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(AbstractBarycenterPortDistributorTC('test_distributePortsOnSide_GivenCrossOnWesternSide_ShouldRemoveCrossing'))
-    # suite.addTest(unittest.makeSuite(AbstractBarycenterPortDistributorTC))
+    # suite.addTest(AbstractBarycenterPortDistributorTC('test_distributePortsOfGraph_GivenInLayerEdgePortOrderCrossing_ShouldRemoveIt'))
+    suite.addTest(unittest.makeSuite(AbstractBarycenterPortDistributorTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-

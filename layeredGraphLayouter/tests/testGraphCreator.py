@@ -1072,15 +1072,16 @@ class TestGraphCreator():
         layer.graph.nodes.append(node)
         return node
 
-    def eastWestEdgeFromTo(self, left: LNode, right: LNode):
+    def eastWestEdgeFromTo(self, left: LNode, right: LNode) -> LEdge:
         leftPort = self.addPortOnSide(left, PortSide.EAST)
         rightPort = self.addPortOnSide(right, PortSide.WEST)
-        self.addEdgeBetweenPorts(leftPort, rightPort)
+        return self.addEdgeBetweenPorts(leftPort, rightPort)
 
     @staticmethod
-    def addEdgeBetweenPorts(from_: LPort, to: LPort):
+    def addEdgeBetweenPorts(from_: LPort, to: LPort) -> LEdge:
         edge = LEdge(None, None)
         edge.setSrcDst(from_, to)
+        return edge
 
     def addPortOnSide(self, node: LNode, portSide: PortSide) -> LPort:
         """
@@ -1238,8 +1239,9 @@ class TestGraphCreator():
     @staticmethod
     def copyPortsInIndexOrder(node: LNode, *indices):
         res = []
+        ports = list(node.iterPorts())
         for i in indices:
-            res.append(node.getPorts().get(i))
+            res.append(ports[i])
 
         return res
 

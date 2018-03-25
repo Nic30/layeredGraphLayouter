@@ -78,4 +78,6 @@ class LGraph():
     def append_layer(self, nodes):
         layer = LNodeLayer(self)
         layer.extend(nodes)
+        for n in nodes:
+            n.setLayer(layer)
         return layer

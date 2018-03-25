@@ -1,7 +1,8 @@
 from typing import List
 
 from layeredGraphLayouter.containers.constants import NodeType
-from layeredGraphLayouter.containers.lGraph import LNodeLayer, LGraph
+from layeredGraphLayouter.containers.lGraph import LNodeLayer
+from layeredGraphLayouter.crossing.graphInfoHolder import GraphInfoHolder
 
 
 class SweepCopy():
@@ -37,27 +38,28 @@ class SweepCopy():
             for node in layer:
                 po[node] = list(node.iterPorts())
 
-    def transferNodeAndPortOrdersToGraph(self, lGraph: LGraph):
+    def transferNodeAndPortOrdersToGraph(self, g: GraphInfoHolder):
         """
         the 'NORTH_OR_SOUTH_PORT' option allows the crossing minimizer to decide
         the side a corresponding dummy node is placed on in order to reduce the number of crossings
         as a consequence the configured port side may not be valid anymore and has to be corrected
         """
         northSouthPortDummies = []
-        #updatePortOrder = set()
+        # updatePortOrder = set()
 
         # iterate the layers
-        layers = lGraph.layers
-        for i, nodes in enumerate(layers):
+        for i, layer in enumerate(g.lGraph.layers):
             northSouthPortDummies.clear()
 
             # iterate and order the nodes within the layer
-            for j, node, in enumerate(nodes):
+            for j, _ in enumerate(layer):
+                node = self.nodeOrder[i][j]
                 # use the id field to remember the order within the layer
                 if node.type == NodeType.NORTH_SOUTH_PORT:
                     northSouthPortDummies.append(node)
 
-                nodes[j] = node
+                layer[j] = node
+                node.setLayer(layer)
 
                 # order ports as computed
                 # node.getPorts().clear()

@@ -6,10 +6,10 @@ from layeredGraphLayouter.containers.lGraph import LNodeLayer
 from layeredGraphLayouter.crossing.barycenterHeuristic import BarycenterHeuristic
 from layeredGraphLayouter.crossing.forsterConstraintResolver import ForsterConstraintResolver
 from layeredGraphLayouter.crossing.nodeRelativePortDistributor import NodeRelativePortDistributor
-from layeredGraphLayouter.tests.crossing.testGraphCreator import TestGraphCreator
+from layeredGraphLayouter.tests.testGraphCreator import TestGraphCreator
 
 
-class BarycenterHeuristicTest(unittest.TestCase):
+class BarycenterHeuristicTC(unittest.TestCase):
     def setUp(self):
         self.gb = TestGraphCreator()
         self.random = self.gb.random
@@ -31,7 +31,7 @@ class BarycenterHeuristicTest(unittest.TestCase):
         gb.eastWestEdgeFromTo(leftNodes[1], rightNodes[0])
         nodes = gb.graph.layers
 
-        portDist = NodeRelativePortDistributor(gb.graph)
+        portDist = NodeRelativePortDistributor(gb.random, gb.graph)
         constraintResolver = ForsterConstraintResolver(nodes)
 
         portDist.calculatePortRanks_many(nodes[0], PortType.OUTPUT)
@@ -62,7 +62,7 @@ class BarycenterHeuristicTest(unittest.TestCase):
         gb.eastWestEdgeFromTo(leftNodes[1], rightNodes[0])
 
         nodes = gb.graph.layers
-        portDist = NodeRelativePortDistributor(gb.graph)
+        portDist = NodeRelativePortDistributor(gb.random, gb.graph)
         constraintResolver = ForsterConstraintResolver(nodes)
         portDist.calculatePortRanks_many(nodes[0], PortType.OUTPUT)
         crossMin = BarycenterHeuristic(
@@ -103,7 +103,7 @@ class BarycenterHeuristicTest(unittest.TestCase):
         expectedSwitchedOrder = gb.switchOrderInArray(0, 1, layers[2])
         expectedOrderSecondLayer = layers[1][:]
 
-        portDist = NodeRelativePortDistributor(gb.graph)
+        portDist = NodeRelativePortDistributor(gb.random, gb.graph)
         constraintResolver = ForsterConstraintResolver(layers)
 
         crossMin = BarycenterHeuristic(
@@ -118,15 +118,10 @@ class BarycenterHeuristicTest(unittest.TestCase):
 
     def test_assumingFixedPortOrder_givenSimplePortOrderCross_removesCrossingIndependentOfRandom(self):
         """
-         * <pre>
-         * ____  *
-         * |  |\/
-         * |__|/\
-         *       *
-         * .
-         * </pre>
-         *
-         * @return Graph of the form above.
+        ____  *
+        |  |\/
+        |__|/\
+              *
         """
         gb = self.gb
         leftLayer = gb.makeLayer()
@@ -144,7 +139,7 @@ class BarycenterHeuristicTest(unittest.TestCase):
 
         nodes = gb.graph.layers
 
-        portDist = NodeRelativePortDistributor(gb.graph)
+        portDist = NodeRelativePortDistributor(gb.random, gb.graph)
         constraintResolver = ForsterConstraintResolver(nodes)
 
         portDist.calculatePortRanks_many(nodes[0], PortType.OUTPUT)
@@ -182,7 +177,7 @@ class BarycenterHeuristicTest(unittest.TestCase):
 
         layers = gb.graph.layers
 
-        portDist = NodeRelativePortDistributor(gb.graph)
+        portDist = NodeRelativePortDistributor(gb.random, gb.graph)
         constraintResolver = ForsterConstraintResolver(layers)
 
         portDist.calculatePortRanks_many(layers[1], PortType.INPUT)
@@ -219,7 +214,7 @@ class BarycenterHeuristicTest(unittest.TestCase):
         gb.eastWestEdgeFromTo(leftNode, rightNodes[1])
         layers = gb.graph.layers
 
-        portDist = NodeRelativePortDistributor(gb.graph)
+        portDist = NodeRelativePortDistributor(gb.random, gb.graph)
         constraintResolver = ForsterConstraintResolver(layers)
 
         portDist.calculatePortRanks_many(layers[0], PortType.INPUT)
@@ -263,7 +258,7 @@ class BarycenterHeuristicTest(unittest.TestCase):
                 if layoutUnit is not None:
                     layoutUnits[layoutUnit].append(node)
 
-        portDist = NodeRelativePortDistributor(gb.graph)
+        portDist = NodeRelativePortDistributor(gb.random, gb.graph)
         constraintResolver = ForsterConstraintResolver(layers)
 
         portDist.calculatePortRanks_many(layers[0], PortType.INPUT)
@@ -292,6 +287,6 @@ class BarycenterHeuristicTest(unittest.TestCase):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(FrameTmplTC('test_sWithStartPadding'))
-    suite.addTest(unittest.makeSuite(BarycenterHeuristicTest))
+    suite.addTest(unittest.makeSuite(BarycenterHeuristicTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

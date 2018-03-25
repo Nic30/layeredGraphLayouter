@@ -14,7 +14,9 @@ class GraphInfoHolder():
     :ivar lGraph: Raw graph data.
     """
 
-    def __init__(self, graph: LGraph, crossMinCls, portDistributorCls, graphs: List["GraphInfoHolder"]):
+    def __init__(self, graph: LGraph, crossMinCls,
+                 portDistributorCls,
+                 graphs: List["GraphInfoHolder"]):
         """
         Create object collecting information about a graph.
 
@@ -27,12 +29,19 @@ class GraphInfoHolder():
         """
         self.lGraph = graph
         self.currentNodeOrder = graph.layers
+        self.bestNodeAndPortOrder = None
+        self.currentlyBestNodeAndPortOrder = None
 
         # Hierarchy information.
         self.parent = graph.parentLnode
         self.hasParent = self.parent is not None
         self.parentGraphData = graphs[self.parent.graph] if self.hasParent else None
         self.hasExternalPorts = graph.p_externalPorts
+        self.childGraphs = []
+        for layer in graph.layers:
+            for node in layer:
+                if node.nestedLgraph is not None:
+                    self.childGraphs.append(node.nestedLgraph)
 
         # Init all objects needing initialization by graph traversal.
         self.crossingsCounter = AllCrossingsCounter(self.lGraph)
@@ -61,16 +70,16 @@ class GraphInfoHolder():
         """
         :return Copy of node order for currently best sweep.
         """
-        if self.crossMinimizer.isDeterministic():
-            return self.currentlyBestNodeAndPortOrder()
+        if self.crossMinimizer.isDeterministic:
+            return self.currentlyBestNodeAndPortOrder
         else:
-            return self.bestNodeNPortOrder()
+            return self.bestNodeAndPortOrder
 
     def crossMinDeterministic(self):
-        return self.crossMinimizer.isDeterministic()
+        return self.crossMinimizer.isDeterministic
 
     def crossMinAlwaysImproves(self):
         """
         :return: whether this CrossingMinimizer always improves
         """
-        return self.crossMinimizer.alwaysImproves()
+        return self.crossMinimizer.alwaysImproves

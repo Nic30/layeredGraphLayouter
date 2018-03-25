@@ -1,33 +1,34 @@
-from layeredGraphLayouter.containers.lNode import LayoutExternalPort, LNode
-from layeredGraphLayouter.containers.constants import PortType
+from layeredGraphLayouter.containers.lNode import LNode
+from layeredGraphLayouter.uniqList import UniqList
 
 
 class GreedyCycleBreaker():
     """
     :note: ported from ELK
     """
+
     def initDegrees(self):
         add_unresolved = self.unresolved.add
-        add_sink = self.sinks.add
-        add_source = self.sources.add
+        add_sink = self.sinks.append
+        add_source = self.sources.append
         for n in self.nodes:
             n.initPortDegrees()
-            if isinstance(n, LayoutExternalPort):
-                if n.indeg:
-                    add_sink(n)
-                else:
-                    add_source(n)
+            if n.indeg and n.outdeg == 0:
+                add_sink(n)
+            elif n.indeg == 0 and n.outdeg:
+                add_source(n)
             else:
                 add_unresolved(n)
 
     def process(self, graph):
+        nodes = self.nodes = graph.getLayerlessNodes()
         # list of sink nodes.
-        sinks = self.sinks = set()
+        sinks = self.sinks = UniqList()
         # list of source nodes
-        sources = self.sources = set()
+        sources = self.sources = UniqList()
         unresolved = self.unresolved = set()
         # mark for the nodes, inducing an ordering of the nodes.
-        nodes = self.nodes = graph.getLayerlessNodes()
+        self.initial_order = {n: i for i, n in enumerate(self.nodes)}
 
         self.initDegrees()
 
@@ -60,7 +61,8 @@ class GreedyCycleBreaker():
                 # randomly select a node from the ones with maximal outflow and
                 # put it left
                 maxNode = max(
-                    unresolved, key=lambda node: node.outdeg - node.indeg)
+                    unresolved,
+                    key=lambda n: (n.outdeg - n.indeg, self.initial_order[n]))
                 maxNode.mark = nextLeft
                 unresolved.remove(maxNode)
                 nextLeft += 1
@@ -76,10 +78,9 @@ class GreedyCycleBreaker():
         for node in nodes:
             # look at the node's outgoing edges
             for port in node.iterPorts():
-                if port.direction == PortType.OUTPUT:
-                    for edge in port.iterEdges():
-                        if node.mark > edge.dstNode.mark:
-                            edge.reverse()
+                for edge in port.outgoingEdges:
+                    if node.mark > edge.dstNode.mark:
+                        edge.reverse()
 
     def updateNeighbors(self, node: LNode):
         """
@@ -89,8 +90,12 @@ class GreedyCycleBreaker():
 
         :param node: node for which neighbors are updated
         """
+        sources_add = self.sources.append
+        sinks_add = self.sinks.append
+        unresolved_discard = self.unresolved.discard
+
         for p in node.iterPorts():
-            isOutput = p.direction == PortType.OUTPUT
+            isOutput = bool(p.outgoingEdges)
             for e in p.iterEdges(filterSelfLoops=True):
                 if e.srcNode is node:
                     other = e.dstNode
@@ -99,12 +104,12 @@ class GreedyCycleBreaker():
 
                 if other.mark == 0:
                     if isOutput:
-                        other.outdeg -= 1
-                        if other.outdeg <= 0 and other.indeg > 0:
-                            self.unresolved.discard(other)
-                            self.sources.add(other)
-                    else:
                         other.indeg -= 1
                         if other.indeg <= 0 and other.outdeg > 0:
-                            self.unresolved.discard(other)
-                            self.sinks.add(other)
+                            unresolved_discard(other)
+                            sources_add(other)
+                    else:
+                        other.outdeg -= 1
+                        if other.outdeg <= 0 and other.indeg > 0:
+                            unresolved_discard(other)
+                            sinks_add(other)

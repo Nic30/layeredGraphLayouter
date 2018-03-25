@@ -9,10 +9,10 @@ class Hyperedge():
     def __init__(self):
         self.edges = []
         self.ports = []
-        self.upperLeft = None
-        self.lowerLeft = None
-        self.upperRight = None
-        self.lowerRight = None
+        self.upperLeft = 0
+        self.lowerLeft = 0
+        self.upperRight = 0
+        self.lowerRight = 0
 
     def __lt__(self, other):
         if self.upperLeft < other.upperLeft:
@@ -36,11 +36,11 @@ class HyperedgeCorner():
         LOWER = 1
 
     def __init__(self, hyperedge: Hyperedge, position: int,
-                 oppositePosition: int, type: "Type"):
+                 oppositePosition: int, type_: "Type"):
         self.hyperedge = hyperedge
         self.position = position
         self.oppositePosition = oppositePosition
-        self.type = type
+        self.type = type_
 
     def __lt__(self, other: "HyperedgeCorner"):
         if (self.position < other.position):
@@ -54,11 +54,11 @@ class HyperedgeCorner():
         elif (self.hyperedge != other.hyperedge):
             # return self.hyperedge.hashCode() - other.hyperedge.hashCode()
             return False
-        elif (self.type == HyperedgeCorner.T_UPPER
-                and other.type == HyperedgeCorner.T_LOWER):
+        elif (self.type == HyperedgeCorner.Type.UPPER
+                and other.type == HyperedgeCorner.Type.LOWER):
             return True
-        elif (self.type == HyperedgeCorner.T_LOWER
-                and other.type == HyperedgeCorner.T_UPPER):
+        elif (self.type == HyperedgeCorner.Type.LOWER
+                and other.type == HyperedgeCorner.Type.UPPER):
             return False
         return 0
 
@@ -109,8 +109,8 @@ class HyperedgeCrossingsCounter():
             # Assign index values in the order north - east - south - west
             for port in node.iterPorts():
                 portEdges = 0
-                for edge in port.getOutgoingEdges():
-                    if node.layerIndex != edge.dstNode.layerIndex:
+                for edge in port.outgoingEdges:
+                    if node.layer != edge.dstNode.layer:
                         portEdges += 1
                 if portEdges > 0:
                     self.portPos[port] = sourceCount
@@ -124,20 +124,18 @@ class HyperedgeCrossingsCounter():
             northInputPorts = 0
             for port in node.iterPorts():
                 if port.side == PortSide.NORTH:
-                    for edge in port.getIncomingEdges():
-                        if node.layerIndex != edge.srcNode.layerIndex:
+                    for edge in port.incomingEdges:
+                        if node.layer != edge.srcNode.layer:
                             northInputPorts += 1
                             break
                 else:
                     break
             # Assign index values in the order north - west - south - east
             otherInputPorts = 0
-            portIter = node.getPorts().listIterator(node.getPorts().size())
-            while (portIter.hasPrevious()):
-                port = portIter.previous()
+            for port in node.iterPortsReversed():
                 portEdges = 0
-                for edge in port.getIncomingEdges():
-                    if node.getLayer() != edge.srcNode.layerIndex:
+                for edge in port.incomingEdges:
+                    if node.layer != edge.srcNode.layer:
                         portEdges += 1
 
                 if portEdges > 0:
@@ -156,31 +154,31 @@ class HyperedgeCrossingsCounter():
         hyperedgeSet = set()
         for node in leftLayer:
             for sourcePort in node.iterPorts():
-                for edge in sourcePort.getOutgoingEdges():
+                for edge in sourcePort.outgoingEdges:
                     targetPort = edge.dst
-                    if node.layerIndex != targetPort.getNode().layerIndex:
-                        sourceHE = port2HyperedgeMap[sourcePort]
-                        targetHE = port2HyperedgeMap[targetPort]
+                    if node.layer != targetPort.getNode().layer:
+                        sourceHE = port2HyperedgeMap.get(sourcePort, None)
+                        targetHE = port2HyperedgeMap.get(targetPort, None)
                         if sourceHE is None and targetHE is None:
                             hyperedge = Hyperedge()
                             hyperedgeSet.add(hyperedge)
-                            hyperedge.edges.add(edge)
-                            hyperedge.ports.add(sourcePort)
+                            hyperedge.edges.append(edge)
+                            hyperedge.ports.append(sourcePort)
                             port2HyperedgeMap[sourcePort] = hyperedge
-                            hyperedge.ports.add(targetPort)
+                            hyperedge.ports.append(targetPort)
                             port2HyperedgeMap[targetPort] = hyperedge
                         elif sourceHE is None:
-                            targetHE.edges.add(edge)
-                            targetHE.ports.add(sourcePort)
+                            targetHE.edges.append(edge)
+                            targetHE.ports.append(sourcePort)
                             port2HyperedgeMap[sourcePort] = targetHE
                         elif targetHE is None:
-                            sourceHE.edges.add(edge)
-                            sourceHE.ports.add(targetPort)
+                            sourceHE.edges.append(edge)
+                            sourceHE.ports.append(targetPort)
                             port2HyperedgeMap[targetPort] = sourceHE
                         elif sourceHE == targetHE:
-                            sourceHE.edges.add(edge)
+                            sourceHE.edges.append(edge)
                         else:
-                            sourceHE.edges.add(edge)
+                            sourceHE.edges.append(edge)
                             for p in targetHE.ports:
                                 port2HyperedgeMap[p] = sourceHE
 
@@ -190,21 +188,21 @@ class HyperedgeCrossingsCounter():
 
         # Determine top and bottom positions for each hyperedge
         hyperedges = list(hyperedgeSet)
-        leftLayerRef = leftLayer[0].layerIndex
-        rightLayerRef = rightLayer[0].layerIndex
+        leftLayerRef = leftLayer[0].layer
+        rightLayerRef = rightLayer[0].layer
         for he in hyperedges:
             he.upperLeft = sourceCount
             he.upperRight = targetCount
             for port in he.ports:
                 pos = self.portPos[port]
-                if port.getNode().layerIndex == leftLayerRef:
+                if port.getNode().layer == leftLayerRef:
                     if pos < he.upperLeft:
                         he.upperLeft = pos
 
                     if pos > he.lowerLeft:
                         he.lowerLeft = pos
 
-                elif port.getNode().layerIndex == rightLayerRef:
+                elif port.getNode().layer == rightLayerRef:
                     if pos < he.upperRight:
                         he.upperRight = pos
 
@@ -236,8 +234,8 @@ class HyperedgeCrossingsCounter():
         while firstIndex < q:
             firstIndex *= 2
 
-        firstIndex -= 1
         tree = [0 for _ in range(2 * firstIndex - 1)]
+        firstIndex -= 1
 
         # Count the straight-line crossings of the topmost edges
         crossings = 0
@@ -245,18 +243,20 @@ class HyperedgeCrossingsCounter():
             index = southSequence[k] + firstIndex
             tree[index] += 1
             while index > 0:
-                if (index % 2) > 0:
+                if index % 2:
                     crossings += tree[index + 1]
-                index = (index - 1) / 2
+                index = (index - 1) // 2
                 tree[index] += 1
 
         # Create corners for the left side
-        leftCorners = [None for _ in range(hyperedges.length * 2)]
-        for i in range(hyperedges.length):
-            leftCorners[2 * i] = HyperedgeCorner(hyperedges[i], hyperedges[i].upperLeft,
+        leftCorners = [None for _ in range(len(hyperedges) * 2)]
+        for i in range(len(hyperedges)):
+            leftCorners[2 * i] = HyperedgeCorner(hyperedges[i],
+                                                 hyperedges[i].upperLeft,
                                                  hyperedges[i].lowerLeft,
                                                  HyperedgeCorner.Type.UPPER)
-            leftCorners[2 * i + 1] = HyperedgeCorner(hyperedges[i], hyperedges[i].lowerLeft,
+            leftCorners[2 * i + 1] = HyperedgeCorner(hyperedges[i],
+                                                     hyperedges[i].lowerLeft,
                                                      hyperedges[i].upperLeft,
                                                      HyperedgeCorner.Type.LOWER)
 

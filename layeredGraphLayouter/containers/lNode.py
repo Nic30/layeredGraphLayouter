@@ -1,12 +1,12 @@
 from itertools import chain
-from typing import List, Union
+from typing import List, Generator
 
-from layeredGraphLayouter.containers.constants import PortSide, PortType, NodeType,\
-    PortConstraints
+from layeredGraphLayouter.containers.constants import PortSide, PortType,\
+    NodeType, PortConstraints
 from layeredGraphLayouter.containers.geometry import GeometryRect
 from layeredGraphLayouter.containers.lPort import LPort
-from layeredGraphLayouter.containers.sizeConfig import UNIT_HEADER_OFFSET, PORT_HEIGHT,\
-    width_of_str
+from layeredGraphLayouter.containers.sizeConfig import UNIT_HEADER_OFFSET,\
+    PORT_HEIGHT, width_of_str
 
 
 class LNode():
@@ -60,8 +60,14 @@ class LNode():
         self.extPortSide = None
         self.barycenterAssociates = None
 
-    def iterPorts(self):
+    def iterPorts(self) -> Generator[LPort, None, None]:
         return chain(self.north, self.east, self.south, self.west)
+
+    def iterPortsReversed(self):
+        return chain(reversed(self.west),
+                     reversed(self.south),
+                     reversed(self.east),
+                     reversed(self.north))
 
     def iterSides(self):
         yield self.north
@@ -69,24 +75,17 @@ class LNode():
         yield self.south
         yield self.west
 
-    def getPorts(self, direction):
-        for p in self.iterPorts():
-            if p.direction == direction:
-                yield p
-
     def initPortDegrees(self):
         indeg = 0
         outdeg = 0
         for p in self.iterPorts():
-            d = p.direction
-            for e in p.iterEdges():
-                if not e.isSelfLoop():
-                    if d == PortType.INPUT:
-                        indeg += 1
-                    elif d == PortType.OUTPUT:
-                        outdeg += 1
-                    else:
-                        raise TypeError(d)
+            for e in p.incomingEdges:
+                if not e.isSelfLoop:
+                    indeg += 1
+
+            for e in p.outgoingEdges:
+                if not e.isSelfLoop:
+                    outdeg += 1
 
         self.indeg = indeg
         self.outdeg = outdeg
@@ -123,6 +122,17 @@ class LNode():
         port = LPort(self, name, direction, side)
         self.getPortSideView(side).append(port)
         return port
+
+    def getPortsByType(self, type_) -> Generator[LPort, None, None]:
+        o = PortType.OUTPUT
+        assert type_ in (o, PortType.INPUT)
+        for p in self.iterPorts():
+            if type_ == o:
+                if p.outgoingEdges:
+                    yield p
+            else:
+                if p.incomingEdges:
+                    yield p
 
     def getPortSideView(self, side) -> List["LPort"]:
         """
