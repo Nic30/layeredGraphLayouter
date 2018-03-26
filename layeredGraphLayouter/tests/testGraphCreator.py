@@ -1266,12 +1266,7 @@ class TestGraphCreator():
 
     @staticmethod
     def getArrayInIndexOrder(arr, *_is):
-        copy_ = arr[:]
-        j = 0
-        for i in _is:
-            copy_[j] = arr[i]
-
-        return copy_
+        return [arr[i] for i in _is]
 
     @staticmethod
     def copyOfListSwitchingOrder(i: int, j: int, list_: list):
