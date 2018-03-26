@@ -159,14 +159,11 @@ class BarycenterHeuristicTC(unittest.TestCase):
 
     def test_assumingFixedPortOrder_givenSimplePortOrderCross_removesCrossingBackwards(self):
         """
-         * <pre>
-         *
-         * *  ___
-         *  \/| |
-         *  /\|_|
-         * *
-         * </pre>
-         *
+        *  ___
+         \/| |
+         /\|_|
+        *
+        
         """
         gb = self.gb
         leftNodes = gb.addNodesToLayer(2, gb.makeLayer())
@@ -189,7 +186,7 @@ class BarycenterHeuristicTC(unittest.TestCase):
 
     def test_inLayerEdges(self):
         """
-              ___
+             ___
            ---| |
            |  | |  <- switch this
         ---+--|_|
