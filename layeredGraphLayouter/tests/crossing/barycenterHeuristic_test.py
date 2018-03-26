@@ -186,7 +186,7 @@ class BarycenterHeuristicTC(unittest.TestCase):
 
     def test_inLayerEdges(self):
         """
-              ___
+             ___
            ---| |
            |  | |  <- switch this
         ---+--|_|
@@ -194,6 +194,8 @@ class BarycenterHeuristicTC(unittest.TestCase):
         *--|--*  <- with this
            |
            ---*
+
+        With fixed Port PortOrder.
         """
         gb = self.gb
         leftNode = gb.addNodeToLayer(gb.makeLayer())
@@ -276,7 +278,7 @@ class BarycenterHeuristicTC(unittest.TestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(FrameTmplTC('test_sWithStartPadding'))
+    #suite.addTest(BarycenterHeuristicTC('test_inLayerEdges'))
     suite.addTest(unittest.makeSuite(BarycenterHeuristicTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
