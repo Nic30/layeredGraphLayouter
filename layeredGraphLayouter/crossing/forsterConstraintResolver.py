@@ -322,7 +322,8 @@ class ForsterConstraintResolver():
         return None
 
     def handleViolatedConstraint(self, firstNodeGroup: ConstraintGroup,
-            secondNodeGroup: ConstraintGroup, nodeGroups: List[ConstraintGroup]):
+                                 secondNodeGroup: ConstraintGroup,
+                                 nodeGroups: List[ConstraintGroup]):
         """
         Handles the case of a violated constraint. The node groups must be sorted by their
         barycenter values. After this method has finished, the list of node groups is smaller
