@@ -38,7 +38,7 @@ class SweepCopy():
             for node in layer:
                 po[node] = list(node.iterPorts())
 
-    def transferNodeAndPortOrdersToGraph(self, g: GraphInfoHolder):
+    def transferNodeAndPortOrdersToGraph(self, g: GraphInfoHolder)-> None:
         """
         the 'NORTH_OR_SOUTH_PORT' option allows the crossing minimizer to decide
         the side a corresponding dummy node is placed on in order to reduce the number of crossings
@@ -50,10 +50,10 @@ class SweepCopy():
         # iterate the layers
         for i, layer in enumerate(g.lGraph.layers):
             northSouthPortDummies.clear()
-
+            templateLayer = self.nodeOrder[i] 
             # iterate and order the nodes within the layer
             for j, _ in enumerate(layer):
-                node = self.nodeOrder[i][j]
+                node = templateLayer[j]
                 # use the id field to remember the order within the layer
                 if node.type == NodeType.NORTH_SOUTH_PORT:
                     northSouthPortDummies.append(node)

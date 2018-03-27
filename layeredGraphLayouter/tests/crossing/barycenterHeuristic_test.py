@@ -160,7 +160,6 @@ class BarycenterHeuristicTC(unittest.TestCase):
          \/| |
          /\|_|
         *
-        
         """
         gb = self.gb
         leftNodes = gb.addNodesToLayer(2, gb.makeLayer())
