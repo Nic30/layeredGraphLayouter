@@ -99,14 +99,13 @@ southern nsl dummies with eastern edges south-to-north
 
 """
 from collections import deque
-from itertools import islice
 from typing import List, Tuple, Dict, Deque
 
-from layeredGraphLayouter.crossing.binaryIndexedTree import BinaryIndexedTree
 from layeredGraphLayouter.containers.constants import PortSide, NodeType
-from layeredGraphLayouter.containers.lNode import LNode
 from layeredGraphLayouter.containers.lEdge import LEdge
+from layeredGraphLayouter.containers.lNode import LNode
 from layeredGraphLayouter.containers.lPort import LPort
+from layeredGraphLayouter.crossing.binaryIndexedTree import BinaryIndexedTree
 
 
 def reverseForTopDown(seq, topDown: bool):
@@ -125,9 +124,9 @@ def inNorthSouthEastWestOrder(node: LNode, side: PortSide):
     @return Iterable for ports on given node and side in given order.
     """
     if side == PortSide.EAST or side == PortSide.NORTH:
-            return node.getPortSideView(side)
+        return node.getPortSideView(side)
     elif side == PortSide.SOUTH or side == PortSide.WEST:
-            return reversed(node.getPortSideView(side))
+        return reversed(node.getPortSideView(side))
     raise ValueError(side)
 
 
@@ -155,9 +154,7 @@ def getNorthSouthPortsWithIncidentEdges(node: LNode, side: PortSide):
 
 
 def isInLayer(edge: LEdge) -> bool:
-    sourceLayer = edge.srcNode.layer.inGraphIndex
-    targetLayer = edge.dstNode.layer.inGraphIndex
-    return sourceLayer == targetLayer
+    return edge.srcNode.layer == edge.dstNode.layer
 
 
 def otherEndOf(edge: LEdge, fromPort: LPort):
@@ -245,11 +242,9 @@ class CrossingsCounter():
         to the left of the leftmost or to the right of the rightmost layer, use
         {@link #initPortPositionsForInLayerCrossings(LNode[], PortSide)}.
 
-        :param upperPort
-                   the upper port
-        :param lowerPort
-                   the lower port
-        :return {@link Pair} of integers where {@link Pair#getFirst()}
+        :param upperPort: the upper port
+        :param lowerPort: the lower port
+        :return: {@link Pair} of integers where {@link Pair#getFirst()}
                 returns the crossings in the unswitched and
                 {@link Pair#getSecond()} in the switched order.
         """
@@ -321,7 +316,7 @@ class CrossingsCounter():
 
         :param nodes: The order of the nodes in the layer
         :param side: The side to initialize
-        :return the ports on which to count crossings on
+        :return: the ports on which to count crossings on
         """
         ports = []
         self.initPositions(nodes, ports, side, True, True)
@@ -336,7 +331,7 @@ class CrossingsCounter():
         :param bottomPort: The port previously further south.
         """
         topPortPos = self.portPositions[topPort]
-        self.portPositions[topPort] = self.portPositions[bottomPort.id]
+        self.portPositions[topPort] = self.portPositions[bottomPort]
         self.portPositions[bottomPort] = topPortPos
 
     def switchNodes(self, wasUpperNode: LNode, wasLowerNode: LNode, side: PortSide):
@@ -372,12 +367,14 @@ class CrossingsCounter():
         ports = set()
         for node in (upperNode, lowerNode):
             for port in inNorthSouthEastWestOrder(node, side):
-                for edge in port.getConnectedEdges():
-                    if not edge.isSelfLoop():
-                        ports.add(port)
-                        if isInLayer(edge):
-                            ports.add(otherEndOf(edge, port))
-        return list(ports)
+                for edge in port.iterEdges(filterSelfLoops=True):
+                    ports.add(port)
+                    if isInLayer(edge):
+                        ports.add(otherEndOf(edge, port))
+        ports = list(ports)
+        poss = self.portPositions
+        ports.sort(key=lambda x: poss[x])                
+        return ports
 
     def connectedPortsSortedByPosition(self, upperPort: LPort, lowerPort: LPort):
         # ports = new TreeSet<>((a, b) -> Integer.compare(positionOf(a),
@@ -385,11 +382,13 @@ class CrossingsCounter():
         ports = set()
         for port in (upperPort, lowerPort):
             ports.add(port)
-            for edge in port.getConnectedEdges():
-                if not isPortSelfLoop(edge):
-                    ports.add(otherEndOf(edge, port))
+            for edge in port.iterEdges(filterSelfLoops=True):
+                ports.add(otherEndOf(edge, port))
 
-        return list(ports)
+        ports = list(ports)
+        poss = self.portPositions
+        ports.sort(key=lambda x: poss[x])                
+        return ports
 
     def countCrossingsOnPorts(self, ports) -> int:
         crossings = 0
@@ -398,7 +397,8 @@ class CrossingsCounter():
         ends = self.ends
 
         for port in ports:
-            indexTree.removeAll(poss[port])
+            po = poss[port]
+            indexTree.removeAll(po)
             # First get crossings for all edges.
             for edge in port.iterEdges():
                 endPosition = poss[otherEndOf(edge, port)]
@@ -425,7 +425,7 @@ class CrossingsCounter():
             for edge in port.iterEdges():
                 if isInLayer(edge):
                     endPosition = poss[otherEndOf(edge, port)]
-                    if endPosition > poss(port):
+                    if endPosition > poss[port]:
                         crossings += indexTree.rank(endPosition)
                         ends.append(endPosition)
                 else:

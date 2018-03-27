@@ -30,7 +30,8 @@ class BinaryIndexedTree():
         self.numsPerIndex[index] += 1
         i = index + 1
         binarySums = self.binarySums
-        while i < len(binarySums):
+        len_ = len(binarySums)
+        while i < len_:
             binarySums[i] += 1
             i += i & -i
 
@@ -60,7 +61,11 @@ class BinaryIndexedTree():
 
         :param index: the index
         """
-        numEntries = self.numsPerIndex[index]
+        try:
+            numEntries = self.numsPerIndex[index]
+        except IndexError:
+            print(index)
+            raise
         if numEntries == 0:
             return
 
@@ -76,8 +81,11 @@ class BinaryIndexedTree():
         """
         Clears contents of tree.
         """
-        self.binarySums.clear()
-        self.numsPerIndex.clear()
+        binarySumsLen_ = len(self.binarySums)
+        numsPerIndex_ = len(self.numsPerIndex)
+
+        self.binarySums = [0 for _ in range(binarySumsLen_)]
+        self.numsPerIndex = [0 for _ in range(numsPerIndex_)]
         self.size = 0
 
     def isEmpty(self) -> bool:

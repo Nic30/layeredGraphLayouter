@@ -118,9 +118,11 @@ class LayerSweepCrossingMinimizer():
         graphsToSweepOn = []
         for g in _graphsToSweepOn:
             g.random = self.random
-            gih = self.graphInfoHolders[g] = GraphInfoHolder(g, BarycenterHeuristic,
-                                                             DummyPortDistributor,
-                                                             self.graphInfoHolders)
+            gih = GraphInfoHolder(g,
+                                  BarycenterHeuristic,
+                                  DummyPortDistributor,
+                                  self.graphInfoHolders)
+            self.graphInfoHolders[g] = gih
             graphsToSweepOn.append(gih)
 
         root = self.graphInfoHolders[graph]
