@@ -118,9 +118,11 @@ class LayerSweepCrossingMinimizer():
         graphsToSweepOn = []
         for g in _graphsToSweepOn:
             g.random = self.random
-            gih = self.graphInfoHolders[g] = GraphInfoHolder(g, BarycenterHeuristic,
-                                                             DummyPortDistributor,
-                                                             self.graphInfoHolders)
+            gih = GraphInfoHolder(g,
+                                  BarycenterHeuristic,
+                                  NodeRelativePortDistributor,
+                                  self.graphInfoHolders)
+            self.graphInfoHolders[g] = gih
             graphsToSweepOn.append(gih)
 
         root = self.graphInfoHolders[graph]
@@ -262,14 +264,14 @@ class LayerSweepCrossingMinimizer():
                 graph.currentNodeOrder)
 
     def sweepReducingCrossings(self, graph, forward: bool, firstSweep: bool):
-        nodes = graph.currentNodeOrder
-        length = len(nodes)
+        layers = graph.currentNodeOrder
+        length = len(layers)
 
         improved = graph.portDistributor.distributePortsWhileSweeping(
-            nodes,
+            layers,
             firstIndex(forward, length),
             forward)
-        firstLayer = nodes[firstIndex(forward, length)]
+        firstLayer = layers[firstIndex(forward, length)]
         improved |= self.sweepInHierarchicalNodes(
             firstLayer, forward, firstSweep)
         i = firstFree(forward, length)
@@ -280,10 +282,10 @@ class LayerSweepCrossingMinimizer():
         step = next_step(forward)
         while isNotEnd(length, i, forward):
             improved |= minimizeCrossings(
-                nodes, i, forward, firstSweep)
-            improved |= distributePortsWhileSweeping(nodes, i, forward)
+                layers, i, forward, firstSweep)
+            improved |= distributePortsWhileSweeping(layers, i, forward)
             improved |= sweepInHierarchicalNodes(
-                nodes[i], forward, firstSweep)
+                layers[i], forward, firstSweep)
             i += step
 
         self.graphsWhoseNodeOrderChanged.add(graph)

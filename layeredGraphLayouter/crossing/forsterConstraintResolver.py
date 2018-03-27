@@ -330,14 +330,12 @@ class ForsterConstraintResolver():
         by one element, since two node groups have been unified, but the list is still correctly
         sorted by barycenter values.
 
-        @param firstNodeGroup
-                   the node group with violated outgoing constraint
-        @param secondNodeGroup
-                   the node group with violated incoming constraint
-        @param nodeGroups
-                   the list of vertices
+        :param firstNodeGroup: the node group with violated outgoing constraint
+        :param secondNodeGroup: the node group with violated incoming constraint
+        :param nodeGroups: the list of vertices
         """
-
+        # [TODO] rewrite iterator access to list construction
+ 
         # Create a new vertex from the two constrain-violating vertices this also
         # automatically calculates the new vertex's barycenter value
         newNodeGroup = ConstraintGroup.from_merge(firstNodeGroup, secondNodeGroup)

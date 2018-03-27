@@ -1,7 +1,6 @@
 class BinaryIndexedTree():
     """
     :note: Ported from ELK.
-    :note: Highly inefficient in python.
 
     Sorted list of integers storing values from 0 up to the maxNumber passed
     on creation. Adding, removing and indexOf
@@ -21,16 +20,29 @@ class BinaryIndexedTree():
         self.numsPerIndex = [0 for _ in range(maxNum)]
         self.size = 0
 
+    def extend_size(self, newMaxNum: int):
+        toAdd = newMaxNum - self.maxNum
+        if toAdd > 0:
+            newItems = [0 for _ in range(toAdd)]
+            self.binarySums.extend(newItems)
+            self.numsPerIndex.extend(newItems)
+
     def add(self, index: int):
         """
         Increment given index.
         :param index: The index to increment.
         """
+        try:
+            self.numsPerIndex[index] += 1
+        except IndexError:
+            self.extend_size(index + 1)
+            return self.add(index)
+
         self.size += 1
-        self.numsPerIndex[index] += 1
         i = index + 1
         binarySums = self.binarySums
-        while i < len(binarySums):
+        len_ = len(binarySums)
+        while i < len_:
             binarySums[i] += 1
             i += i & -i
 
@@ -38,16 +50,14 @@ class BinaryIndexedTree():
         """
         Sum all entries before given index, i.e. index - 1.
 
-        :param index:
-                   Not included end index.
+        :param index: Not included end index.
         :return sum:
         """
-        i = index
         sum_ = 0
         binarySums = self.binarySums
-        while i > 0:
-            sum_ += binarySums[i]
-            i -= i & -i
+        while index > 0:
+            sum_ += binarySums[index]
+            index -= index & -index
 
         return sum_
 
@@ -60,7 +70,11 @@ class BinaryIndexedTree():
 
         :param index: the index
         """
-        numEntries = self.numsPerIndex[index]
+        try:
+            numEntries = self.numsPerIndex[index]
+        except IndexError:
+            print(index)
+            raise
         if numEntries == 0:
             return
 
@@ -76,8 +90,11 @@ class BinaryIndexedTree():
         """
         Clears contents of tree.
         """
-        self.binarySums.clear()
-        self.numsPerIndex.clear()
+        binarySumsLen_ = len(self.binarySums)
+        numsPerIndex_ = len(self.numsPerIndex)
+
+        self.binarySums = [0 for _ in range(binarySumsLen_)]
+        self.numsPerIndex = [0 for _ in range(numsPerIndex_)]
         self.size = 0
 
     def isEmpty(self) -> bool:

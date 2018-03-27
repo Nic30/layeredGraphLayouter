@@ -93,8 +93,9 @@ class BarycenterHeuristic():
 
         layer = list(order[freeLayerIndex])
         self.minimizeCrossingsInLayer(layer, preOrdered, False, forwardSweep)
+        new_order = {n: i for i, n in enumerate(layer)}
         # apply the new ordering
-        order[freeLayerIndex] = layer
+        order[freeLayerIndex].sort(key=lambda n: new_order[n])
 
         return False  # Does not always improve.
 
@@ -114,9 +115,10 @@ class BarycenterHeuristic():
 
     def setFirstLayerOrder(self, order: List[LNodeLayer], isForwardSweep: bool):
         _startIndex = startIndex(isForwardSweep, len(order))
-        nodes = list(order[_startIndex])
-        self.minimizeCrossingsInLayer(nodes, False, True, isForwardSweep)
-        order[_startIndex] = nodes
+        layer = list(order[_startIndex])
+        self.minimizeCrossingsInLayer(layer, False, True, isForwardSweep)
+        new_order = {n: i for i, n in enumerate(layer)}
+        order[_startIndex].sort(key=lambda n: new_order[n])
 
         return False  # Does not always improve
 
@@ -227,7 +229,7 @@ class BarycenterHeuristic():
                 # calculation instead
                 fixedNode = fixedPort.getNode()
 
-                if fixedNode.layer == node.layer:
+                if fixedNode.layer is node.layer:
                     # Self-loops are ignored
                     if fixedNode is not node:
                         # Find the fixed node's node group and calculate its
@@ -247,7 +249,7 @@ class BarycenterHeuristic():
         if barycenterAssociates is not None:
             for associate in barycenterAssociates:
                 # Make sure the associate is in the same layer as this node
-                if node.layer == associate.layer:
+                if node.layer is associate.layer:
                     # Find the associate's node group and calculate its
                     # barycenter
                     calculateBarycenter(associate, forward)

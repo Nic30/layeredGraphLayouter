@@ -20,9 +20,6 @@ class BarycenterHeuristicTC(unittest.TestCase):
          \/
          /\
         *  *
-        .
-
-        @return Graph of the form above.
         """
         gb = self.gb
         leftNodes = gb.addNodesToLayer(2, gb.makeLayer())

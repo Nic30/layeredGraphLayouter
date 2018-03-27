@@ -17,10 +17,10 @@ class LNode():
     :ivar name: name of this unit
     :ivar class_name: name of class of this unit
 
-    :ivar NORTH: list of LPort for on  top side.
-    :ivar EAST: list of LPort for on right side.
-    :ivar SOUTH: list of LPort for on bottom side.
-    :ivar WEST: list of LPort for on left side.
+    :ivar north: list of LPort for on  top side.
+    :ivar east: list of LPort for on right side.
+    :ivar south: list of LPort for on bottom side.
+    :ivar west: list of LPort for on left side.
     """
 
     def __init__(self, graph: "LGraph", name: str= None, originObj=None):
@@ -106,11 +106,11 @@ class LNode():
         port_width = width / 2
         _y = y + UNIT_HEADER_OFFSET
         for i in self.east:
-            _y = i.initDim(port_width, x=x, y=_y)
+            _y = i.initDim(port_width, x=x + port_width, y=_y)
 
         _y = y + UNIT_HEADER_OFFSET
         for o in self.west:
-            _y = o.initDim(port_width, x=x + port_width, y=_y)
+            _y = o.initDim(port_width, x=x, y=_y)
 
     def translate(self, x, y):
         self.geometry.x += x

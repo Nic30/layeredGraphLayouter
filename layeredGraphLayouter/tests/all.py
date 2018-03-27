@@ -9,8 +9,8 @@ from layeredGraphLayouter.tests.layer_test import LayerTC
 
 
 TCS = [
-    LayerTC,
     CycleBreakerTC,
+    LayerTC,
 
     BinaryIndexedTreeTC,
     AbstractBarycenterPortDistributorTC,

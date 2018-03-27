@@ -14,7 +14,8 @@ class GraphInfoHolder():
     :ivar lGraph: Raw graph data.
     """
 
-    def __init__(self, graph: LGraph, crossMinCls,
+    def __init__(self, graph: LGraph,
+                 crossMinCls,
                  portDistributorCls,
                  graphs: List["GraphInfoHolder"]):
         """

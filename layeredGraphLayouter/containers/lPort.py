@@ -51,11 +51,10 @@ class LPort():
         it = chain(self.incomingEdges, self.outgoingEdges)
         if filterSelfLoops:
             for e in it:
-                if e.isSelfLoop:
-                    continue
-                yield e
+                if not e.isSelfLoop:
+                    yield e
         else:
-            return it
+            yield from it
 
     def initDim(self, width, x=0, y=0):
         g = self.geometry = GeometryRect(x, y, width, PORT_HEIGHT)

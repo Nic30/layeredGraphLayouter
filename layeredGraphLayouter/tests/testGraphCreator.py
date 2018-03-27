@@ -75,7 +75,7 @@ class TestGraphCreator():
 
         :return: graph with two nodes with no connection between them.
         """
-        layer = self.makeLayer(self.graph)
+        layer = self.makeLayer()
         self.addNodeToLayer(layer)
         self.addNodeToLayer(layer)
         return self.graph
@@ -93,8 +93,8 @@ class TestGraphCreator():
         :return: Graph of the form above.
         """
 
-        leftLayer = self.makeLayer(self.graph)
-        rightLayer = self.makeLayer(self.graph)
+        leftLayer = self.makeLayer()
+        rightLayer = self.makeLayer()
 
         topLeft = self.addNodeToLayer(leftLayer)
         bottomLeft = self.addNodeToLayer(leftLayer)
@@ -144,7 +144,7 @@ class TestGraphCreator():
         .
         </pre>
 
-        @return Graph of the form above.
+        :return: Graph of the form above.
         """
         self.getCrossFormedGraph()
         layerOne = self.graph.layers[1]
@@ -164,7 +164,7 @@ class TestGraphCreator():
         .
         </pre>
 
-        @return Graph of the form above.
+        :return: Graph of the form above.
         """
         makeLayer = self.makeLayer
         addNodeToLayer = self.addNodeToLayer
@@ -191,9 +191,9 @@ class TestGraphCreator():
         """
         Creates graph with only one node.
 
-        @return graph with only one node.
+        :return: graph with only one node.
         """
-        layer = self.makeLayer(self.graph)
+        layer = self.makeLayer()
         self.addNodeToLayer(layer)
 
         return self.graph
@@ -209,7 +209,7 @@ class TestGraphCreator():
         .
         </pre>
 
-        @return graph of the form above
+        :return: graph of the form above
         """
         graph = self.graph
         makeLayer = self.makeLayer
@@ -241,7 +241,7 @@ class TestGraphCreator():
         .
         </pre>
 
-        @return graph of the form above
+        :return: graph of the form above
         """
         graph = self.graph
         makeLayer = self.makeLayer
@@ -271,7 +271,7 @@ class TestGraphCreator():
         .
         </pre>
 
-        @return Graph of the form above.
+        :return: Graph of the form above.
         """
         graph = self.graph
         makeLayer = self.makeLayer
@@ -304,15 +304,15 @@ class TestGraphCreator():
         .
         </pre>
 
-        @return graph of the form above
+        :return: graph of the form above
         """
         graph = self.graph
         makeLayer = self.makeLayer
         eastWestEdgeFromTo = self.eastWestEdgeFromTo
         addNodesToLayer = self.addNodesToLayer
 
-        leftLayer = makeLayer(graph)
-        rightLayer = makeLayer(graph)
+        leftLayer = makeLayer()
+        rightLayer = makeLayer()
 
         leftNodes = addNodesToLayer(3, leftLayer)
         rightNodes = addNodesToLayer(3, rightLayer)
@@ -323,19 +323,16 @@ class TestGraphCreator():
 
         return graph
 
-    def getCrossWithManySelfLoopsGraph(self):
+    def getCrossWithManySelfLoopsGraph(self) -> LGraph:
         """
         Cross formed graph, but each node has three extra self loop edges.
 
-        <pre>
         *  *
          \/
          /\
         *  *
-        .
-        </pre>
 
-        @return Graph of the form above.
+        :return: Graph of the form above.
         """
         graph = self.graph
         makeLayer = self.makeLayer
@@ -344,8 +341,8 @@ class TestGraphCreator():
         selfLoopOn = self.selfLoopOn
         addEdgeBetweenPorts = self.addEdgeBetweenPorts
 
-        leftLayer = makeLayer(graph)
-        rightLayer = makeLayer(graph)
+        leftLayer = makeLayer()
+        rightLayer = makeLayer()
 
         topLeft = addNodeToLayer(leftLayer)
         bottomLeft = addNodeToLayer(leftLayer)
@@ -356,14 +353,12 @@ class TestGraphCreator():
         bottomLeftPort = addPortOnSide(bottomLeft, PortSide.EAST)
 
         selfLoopCrossGraph = graph
-        for layer in selfLoopCrossGraph:
+        for layer in selfLoopCrossGraph.layers:
             for node in layer:
-                selfLoopOn(node, PortSide.EAST)
-                selfLoopOn(node, PortSide.EAST)
-                selfLoopOn(node, PortSide.EAST)
-                selfLoopOn(node, PortSide.WEST)
-                selfLoopOn(node, PortSide.WEST)
-                selfLoopOn(node, PortSide.WEST)
+                for _ in range(3):
+                    selfLoopOn(node, PortSide.EAST)
+                for _ in range(3):
+                    selfLoopOn(node, PortSide.WEST)
 
         topRightPort = addPortOnSide(topRight, PortSide.WEST)
         bottomRightPort = addPortOnSide(bottomRight, PortSide.WEST)
@@ -382,16 +377,13 @@ class TestGraphCreator():
 
     def getMoreComplexThreeLayerGraph(self):
         """
-        <pre>
         *\  --*
           \/ /
         *-*===*
          + /
         * * --*
-        .
-        </pre>
 
-        @return Graph of the form above.
+        :return: Graph of the form above.
         """
         makeLayer = self.makeLayer
         graph = self.graph
@@ -400,9 +392,9 @@ class TestGraphCreator():
         addEdgeBetweenPorts = self.addEdgeBetweenPorts
         eastWestEdgeFromTo = self.eastWestEdgeFromTo
 
-        leftLayer = makeLayer(graph)
-        middleLayer = makeLayer(graph)
-        rightLayer = makeLayer(graph)
+        leftLayer = makeLayer()
+        middleLayer = makeLayer()
+        rightLayer = makeLayer()
 
         leftNodes = addNodesToLayer(3, leftLayer)
         middleNodes = addNodesToLayer(2, middleLayer)
@@ -438,15 +430,15 @@ class TestGraphCreator():
 
         Port order fixed.
 
-        @return Graph of the form above.
+        :return: Graph of the form above.
         """
         makeLayer = self.makeLayer
         graph = self.graph
         addNodeToLayer = self.addNodeToLayer
         eastWestEdgeFromTo = self.eastWestEdgeFromTo
 
-        leftLayer = makeLayer(graph)
-        rightLayer = makeLayer(graph)
+        leftLayer = makeLayer()
+        rightLayer = makeLayer()
 
         leftNode = addNodeToLayer(leftLayer)
         leftNode.portConstraints = PortConstraints.FIXED_ORDER
@@ -471,7 +463,7 @@ class TestGraphCreator():
 
         Port order not fixed
 
-        @return Graph of the form above.
+        :return: Graph of the form above.
         """
         graph = self.graph
         makeLayer = self.makeLayer
@@ -501,7 +493,7 @@ class TestGraphCreator():
         .
         </pre>
 
-        @return Graph of the form above.
+        :return: Graph of the form above.
         """
         graph = self.graph
         makeLayers = self.makeLayers
@@ -531,7 +523,7 @@ class TestGraphCreator():
         .
         </pre>
 
-        @return Graph of the form above.
+        :return: Graph of the form above.
         """
         graph = self.graph
         makeLayers = self.makeLayers
@@ -565,7 +557,7 @@ class TestGraphCreator():
 
         Port order fixed.
 
-        @return Graph of the form above.
+        :return: Graph of the form above.
         """
         graph = self.graph
         makeLayer = self.makeLayer
@@ -602,7 +594,7 @@ class TestGraphCreator():
 
         Port order fixed.
 
-        @return Graph of the form above.
+        :return: Graph of the form above.
         """
         graph = self.graph
         makeLayer = self.makeLayer
@@ -640,7 +632,7 @@ class TestGraphCreator():
 
         Port order fixed.
 
-        @return Graph of the form above.
+        :return: Graph of the form above.
         """
         makeLayers = self.makeLayers
         addNodesToLayer = self.addNodesToLayer
@@ -681,7 +673,7 @@ class TestGraphCreator():
          *
          * First Layer and last layer in fixed order.
          *
-         * @return graph of the form above.
+         * :return: graph of the form above.
         """
         makeLayers = self.makeLayers
         addNodesToLayer = self.addNodesToLayer
@@ -718,7 +710,7 @@ class TestGraphCreator():
         * .
         * </pre>
         *
-        * @return graph of the form above.
+        * :return: graph of the form above.
         """
         makeLayers = self.makeLayers
         addNodesToLayer = self.addNodesToLayer
@@ -752,7 +744,7 @@ class TestGraphCreator():
          * .
          * </pre>
          *
-         * @return Graph of the form above.
+         * :return: Graph of the form above.
         """
         graph = self.graph
         makeLayer = self.makeLayer
@@ -785,7 +777,7 @@ class TestGraphCreator():
          * .
          * </pre>
          *
-         * @return Graph of the form above.
+         * :return: Graph of the form above.
         """
         graph = self.graph
         makeLayer = self.makeLayer
@@ -816,7 +808,7 @@ class TestGraphCreator():
          *
          * .
          *
-         * @return Graph of the form above.
+         * :return: Graph of the form above.
         """
         graph = self.graph
         makeLayer = self.makeLayer
@@ -846,7 +838,7 @@ class TestGraphCreator():
          *
          * .
          *
-         * @return Graph of the form above.
+         * :return: Graph of the form above.
         """
         graph = self.graph
         makeLayer = self.makeLayer
@@ -885,7 +877,7 @@ class TestGraphCreator():
          *
          * .
          *
-         * @return Graph of the form above.
+         * :return: Graph of the form above.
         """
         graph = self.graph
         makeLayer = self.makeLayer
@@ -924,7 +916,7 @@ class TestGraphCreator():
          *
          * .
          *
-         * @return Graph of the form above.
+         * :return: Graph of the form above.
         """
         graph = self.graph
         makeLayer = self.makeLayer
@@ -963,7 +955,7 @@ class TestGraphCreator():
      * Two edges into same port.
      * </pre>
      *
-     * @return Graph of the form above.
+     * :return: Graph of the form above.
      """
 
     def twoEdgesIntoSamePortFromEastWithFixedPortOrder(self):
@@ -999,7 +991,7 @@ class TestGraphCreator():
     """
      * Return nodes as 2d array.
      * @param g
-     * @return
+     * :return:
      """
 
     def getCurrentOrder(self, g: LGraph):
@@ -1072,9 +1064,16 @@ class TestGraphCreator():
         layer.graph.nodes.append(node)
         return node
 
-    def eastWestEdgeFromTo(self, left: LNode, right: LNode) -> LEdge:
-        leftPort = self.addPortOnSide(left, PortSide.EAST)
-        rightPort = self.addPortOnSide(right, PortSide.WEST)
+    def eastWestEdgeFromTo(self, left: Union[LNode, LPort],
+                           right: Union[LNode, LPort]) -> LEdge:
+        if isinstance(left, LPort):
+            leftPort = left
+        else:
+            leftPort = self.addPortOnSide(left, PortSide.EAST)
+        if isinstance(right, LPort):
+            rightPort = right
+        else:
+            rightPort = self.addPortOnSide(right, PortSide.WEST)
         return self.addEdgeBetweenPorts(leftPort, rightPort)
 
     @staticmethod
@@ -1120,7 +1119,7 @@ class TestGraphCreator():
         *
         * Port order not fixed.
         *
-        * @return Graph of the form above.
+        * :return: Graph of the form above.
         """
         addNodesToLayer = self.addNodesToLayer
         makeLayer = self.makeLayer
@@ -1140,18 +1139,16 @@ class TestGraphCreator():
 
     def getOnlyCorrectlyImprovedByBestOfForwardAndBackwardSweepsInSingleLayer(self):
         """
-         * <pre>
-         * ___
-         * | |\    *
-         * | |\\  /
-         * |_|-++-+*
-         *     || \
-         *     ====*
-         * </pre>
-         *
-         * left Node has fixed Port Order.
-         *
-         * @return Graph of the form above.
+        ___
+        | |\    *
+        | |\\  /
+        |_|-++-+*
+            || \
+            ====*
+
+        left Node has fixed Port Order.
+
+        :return: Graph of the form above.
          """
         graph = self.graph
         eastWestEdgeFromTo = self.eastWestEdgeFromTo
