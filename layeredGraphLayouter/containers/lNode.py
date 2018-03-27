@@ -106,11 +106,11 @@ class LNode():
         port_width = width / 2
         _y = y + UNIT_HEADER_OFFSET
         for i in self.east:
-            _y = i.initDim(port_width, x=x, y=_y)
+            _y = i.initDim(port_width, x=x + port_width, y=_y)
 
         _y = y + UNIT_HEADER_OFFSET
         for o in self.west:
-            _y = o.initDim(port_width, x=x + port_width, y=_y)
+            _y = o.initDim(port_width, x=x, y=_y)
 
     def translate(self, x, y):
         self.geometry.x += x
