@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: UTF-8 -*-
+
 import unittest
 
 from layeredGraphLayouter.tests.crossing.abstractBarycenterPortDistributor_test import AbstractBarycenterPortDistributorTC
