@@ -154,7 +154,7 @@ def getNorthSouthPortsWithIncidentEdges(node: LNode, side: PortSide):
 
 
 def isInLayer(edge: LEdge) -> bool:
-    return edge.srcNode.layer == edge.dstNode.layer
+    return edge.srcNode.layer is edge.dstNode.layer
 
 
 def otherEndOf(edge: LEdge, fromPort: LPort):
@@ -362,8 +362,6 @@ class CrossingsCounter():
     def connectedInLayerPortsSortedByPosition(self, upperNode: LPort,
                                               lowerNode: LNode,
                                               side: PortSide):
-        # ports = new TreeSet<>((a, b) -> Integer.compare(positionOf(a),
-        # positionOf(b)))
         ports = set()
         for node in (upperNode, lowerNode):
             for port in inNorthSouthEastWestOrder(node, side):
@@ -373,12 +371,10 @@ class CrossingsCounter():
                         ports.add(otherEndOf(edge, port))
         ports = list(ports)
         poss = self.portPositions
-        ports.sort(key=lambda x: poss[x])                
+        ports.sort(key=lambda x: poss[x])
         return ports
 
     def connectedPortsSortedByPosition(self, upperPort: LPort, lowerPort: LPort):
-        # ports = new TreeSet<>((a, b) -> Integer.compare(positionOf(a),
-        # positionOf(b)))
         ports = set()
         for port in (upperPort, lowerPort):
             ports.add(port)
@@ -387,7 +383,7 @@ class CrossingsCounter():
 
         ports = list(ports)
         poss = self.portPositions
-        ports.sort(key=lambda x: poss[x])                
+        ports.sort(key=lambda x: poss[x])
         return ports
 
     def countCrossingsOnPorts(self, ports) -> int:
@@ -401,7 +397,8 @@ class CrossingsCounter():
             indexTree.removeAll(po)
             # First get crossings for all edges.
             for edge in port.iterEdges():
-                endPosition = poss[otherEndOf(edge, port)]
+                other = otherEndOf(edge, port)
+                endPosition = poss[other]
                 if endPosition > poss[port]:
                     crossings += indexTree.rank(endPosition)
                     ends.append(endPosition)

@@ -14,10 +14,13 @@ class AllCrossingsCounter():
     """
 
     def __init__(self, graph: LGraph):
-        inLayerEdgeCounts = self.inLayerEdgeCounts = [0 for _ in graph.layers]
-        hasNorthSouthPorts = self.hasNorthSouthPorts = [
-            False for _ in graph.layers]
-        hasHyperEdgesEastOfIndex = self.hasHyperEdgesEastOfIndex = hasNorthSouthPorts[:]
+        inLayerEdgeCounts = [0 for _ in graph.layers]
+        hasNorthSouthPorts = [False for _ in graph.layers]
+        hasHyperEdgesEastOfIndex = hasNorthSouthPorts[:]
+
+        self.inLayerEdgeCounts = inLayerEdgeCounts
+        self.hasNorthSouthPorts = hasNorthSouthPorts
+        self.hasHyperEdgesEastOfIndex = hasHyperEdgesEastOfIndex 
         self.nPorts = 0
 
         for l, layer in enumerate(graph.layers):
@@ -31,7 +34,7 @@ class AllCrossingsCounter():
                             hasHyperEdgesEastOfIndex[l - 1] = True
 
         for edge in graph.edges:
-            if (edge.srcNode.layer.inGraphIndex == edge.dstNode.layer.inGraphIndex):
+            if (edge.srcNode.layer is edge.dstNode.layer):
                 inLayerEdgeCounts[l] += 1
 
         portPos = {}
@@ -69,7 +72,8 @@ class AllCrossingsCounter():
     def countCrossingsAt(self, layerIndex: int, currentOrder: List[LNodeLayer]):
         totalCrossings = 0
         leftLayer = currentOrder[layerIndex]
-        if layerIndex < len(currentOrder) - 1:
+        isNotLast = layerIndex < len(currentOrder) - 1
+        if isNotLast:
             rightLayer = currentOrder[layerIndex + 1]
             if self.hasHyperEdgesEastOfIndex[layerIndex]:
                 totalCrossings = self.hyperedgeCrossingsCounter.countCrossings(

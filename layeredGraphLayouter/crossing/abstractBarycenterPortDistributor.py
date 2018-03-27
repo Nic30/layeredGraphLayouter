@@ -8,13 +8,12 @@ for calculating barycenter or median values for nodes. Furthermore, they are use
 class for distributing the ports of nodes where the order of ports is not fixed,
 which has to be done as the last step of each crossing minimization processor.
 There are different ways to determine port ranks, therefore that is done in concrete subclasses.
-
 """
-from math import inf
 from collections import defaultdict
+from math import inf
+from typing import List
 
 from layeredGraphLayouter.containers.constants import PortType, PortSide
-from layeredGraphLayouter.containers.lGraph import LNodeLayer
 from layeredGraphLayouter.containers.lNode import LNode
 from layeredGraphLayouter.containers.lPort import LPort
 
@@ -69,11 +68,13 @@ class AbstractBarycenterPortDistributor():
                 fixedLayer = nodeOrder[currentIndex - 1]
             else:
                 fixedLayer = nodeOrder[currentIndex + 1]
-            self.calculatePortRanks_many(fixedLayer, portTypeFor(isForwardSweep))
+            self.calculatePortRanks_many(
+                fixedLayer, portTypeFor(isForwardSweep))
             for node in freeLayer:
                 distributePorts_side(node, side)
 
-            self.calculatePortRanks_many(freeLayer, portTypeFor(not isForwardSweep))
+            self.calculatePortRanks_many(
+                freeLayer, portTypeFor(not isForwardSweep))
             for node in fixedLayer:
                 if not hasNestedGraph(node):
                     distributePorts_side(node, PortSide.opposite(side))
@@ -85,17 +86,15 @@ class AbstractBarycenterPortDistributor():
         # which do not need to count.
         return False
 
-    def calculatePortRanks_many(self, layer: LNodeLayer, portType: PortType):
+    def calculatePortRanks_many(self, layer: List[LNode], portType: PortType):
         """
-         * Determine ranks for all ports of specific type in the given layer.
-         * The ranks are written to the {@link #getPortRanks() array.
-         *
-         * @param layer
-         *            a layer as node array
-         * @param portType
-         *            the port type to consider
+        Determine ranks for all ports of specific type in the given layer.
+        The ranks are written to the {@link #getPortRanks() array.
+
+        :param layer: a layer as node array
+        :param portType: the port type to consider
         """
-        assert isinstance(layer, LNodeLayer), layer
+        #assert isinstance(layer, LNodeLayer), (layer, layer.__class__)
         calculatePortRanks = self.calculatePortRanks
         consumedRank = 0
         for node in layer:
@@ -103,20 +102,17 @@ class AbstractBarycenterPortDistributor():
 
     def calculatePortRanks(self, node: LNode, rankSum: float, type_: PortType):
         """
-         * Assign port ranks for the input or output ports of the given node. If the node's port
-         * constraints imply a fixed order, the ports are assumed to be pre-ordered in the usual way,
-         * i.e. in clockwise order north - east - south - west.
-         * The ranks are written to the {@link #getPortRanks() array.
-         *
-         * @param node
-         *            a node
-         * @param rankSum
-         *            the sum of ranks of preceding nodes in the same layer
-         * @param type
-         *            the port type to consider
-         * @return the rank consumed by the given node the following node's ranks start at
-         *         {@code rankSum + consumedRank
-         * @see {@link org.eclipse.alg.layered.intermediate.PortListSorter 
+        Assign port ranks for the input or output ports of the given node. If the node's port
+        constraints imply a fixed order, the ports are assumed to be pre-ordered in the usual way,
+        i.e. in clockwise order north - east - south - west.
+        The ranks are written to the {@link #getPortRanks() array.
+
+        :param node: a node
+        :param rankSum: the sum of ranks of preceding nodes in the same layer
+        :param type: the port type to consider
+        :return the rank consumed by the given node the following node's ranks start at
+                {@code rankSum + consumedRank
+        :see:  {@link org.eclipse.alg.layered.intermediate.PortListSorter 
         """
         raise NotImplementedError("Implement on child class")
 
@@ -139,7 +135,7 @@ class AbstractBarycenterPortDistributor():
          * Distribute the ports of the given node by their sides, connected ports, and input or output
          * type.
          *
-         * @param node
+         * :param node
          *            node whose ports shall be sorted
         """
         self.inLayerPorts.clear()
@@ -179,7 +175,7 @@ class AbstractBarycenterPortDistributor():
             else:
                 # add up all ranks of connected ports
                 for outgoingEdge in port.outgoingEdges:
-                    if outgoingEdge.dstNode.layer == node.layer:
+                    if outgoingEdge.dstNode.layer is node.layer:
                         inLayerPorts.add(port)
                         continueOnPortIteration = True
                         break
@@ -194,7 +190,7 @@ class AbstractBarycenterPortDistributor():
                     continue
 
                 for incomingEdge in port.incomingEdges:
-                    if incomingEdge.srcNode.layer == node.layer:
+                    if incomingEdge.srcNode.layer is node.layer:
                         inLayerPorts.add(port)
                         continueOnPortIteration = True
                         break
@@ -313,7 +309,7 @@ class AbstractBarycenterPortDistributor():
         Sort the ports of a node using the given relative position values.
         These values are interpreted as a hint for the clockwise order of ports.
 
-        @param node: a node
+        :param node: a node
         """
         portBarycenter = self.portBarycenter
         for side in node.iterSides():

@@ -110,7 +110,7 @@ class HyperedgeCrossingsCounter():
             for port in node.iterPorts():
                 portEdges = 0
                 for edge in port.outgoingEdges:
-                    if node.layer != edge.dstNode.layer:
+                    if node.layer is not edge.dstNode.layer:
                         portEdges += 1
                 if portEdges > 0:
                     self.portPos[port] = sourceCount
@@ -125,7 +125,7 @@ class HyperedgeCrossingsCounter():
             for port in node.iterPorts():
                 if port.side == PortSide.NORTH:
                     for edge in port.incomingEdges:
-                        if node.layer != edge.srcNode.layer:
+                        if node.layer is not edge.srcNode.layer:
                             northInputPorts += 1
                             break
                 else:
@@ -135,7 +135,7 @@ class HyperedgeCrossingsCounter():
             for port in node.iterPortsReversed():
                 portEdges = 0
                 for edge in port.incomingEdges:
-                    if node.layer != edge.srcNode.layer:
+                    if node.layer is not edge.srcNode.layer:
                         portEdges += 1
 
                 if portEdges > 0:
@@ -156,7 +156,7 @@ class HyperedgeCrossingsCounter():
             for sourcePort in node.iterPorts():
                 for edge in sourcePort.outgoingEdges:
                     targetPort = edge.dst
-                    if node.layer != targetPort.getNode().layer:
+                    if node.layer is not targetPort.getNode().layer:
                         sourceHE = port2HyperedgeMap.get(sourcePort, None)
                         targetHE = port2HyperedgeMap.get(targetPort, None)
                         if sourceHE is None and targetHE is None:
@@ -195,14 +195,14 @@ class HyperedgeCrossingsCounter():
             he.upperRight = targetCount
             for port in he.ports:
                 pos = self.portPos[port]
-                if port.getNode().layer == leftLayerRef:
+                if port.getNode().layer is leftLayerRef:
                     if pos < he.upperLeft:
                         he.upperLeft = pos
 
                     if pos > he.lowerLeft:
                         he.lowerLeft = pos
 
-                elif port.getNode().layer == rightLayerRef:
+                elif port.getNode().layer is rightLayerRef:
                     if pos < he.upperRight:
                         he.upperRight = pos
 
