@@ -17,10 +17,10 @@ class LNode():
     :ivar name: name of this unit
     :ivar class_name: name of class of this unit
 
-    :ivar NORTH: list of LPort for on  top side.
-    :ivar EAST: list of LPort for on right side.
-    :ivar SOUTH: list of LPort for on bottom side.
-    :ivar WEST: list of LPort for on left side.
+    :ivar north: list of LPort for on  top side.
+    :ivar east: list of LPort for on right side.
+    :ivar south: list of LPort for on bottom side.
+    :ivar west: list of LPort for on left side.
     """
 
     def __init__(self, graph: "LGraph", name: str= None, originObj=None):
