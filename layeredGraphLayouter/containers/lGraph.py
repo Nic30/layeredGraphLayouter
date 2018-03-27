@@ -1,6 +1,7 @@
 from layeredGraphLayouter.containers.lNode import LNode
 from layeredGraphLayouter.containers.lPort import LPort
 from layeredGraphLayouter.containers.lEdge import LEdge
+from layeredGraphLayouter.containers.constants import PortConstraints
 
 
 class LNodeLayer(list):
@@ -63,8 +64,10 @@ class LGraph():
         """
         return self.nodes
 
-    def add_node(self, name: str=None, originObj=None) -> LNode:
+    def add_node(self, name: str=None, originObj=None,
+                 portConstraint=PortConstraints.FIXED_ORDER) -> LNode:
         n = LNode(self, name=name, originObj=originObj)
+        n.portConstraints = portConstraint
         self._node2lnode[originObj] = n
         self.nodes.append(n)
         return n
