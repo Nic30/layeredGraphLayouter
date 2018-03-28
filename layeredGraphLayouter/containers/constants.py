@@ -107,7 +107,7 @@ class PortConstraints(Enum):
         @see PortSide
         @return true if the port sides are fixed
         """
-        return self == PortConstraints.FREE and self != PortConstraints.UNDEFINED
+        return self == PortConstraints.FREE or self != PortConstraints.UNDEFINED
 
 
 class EdgeRouting(Enum):
@@ -119,3 +119,33 @@ class EdgeRouting(Enum):
     ORTHOGONAL = 2
     # splines edge routing.
     SPLINES = 4
+
+
+class HierarchyHandling(Enum):
+    """
+    Options for setting how children of nodes should be handled in the current layout run. There are
+    three options for this:
+
+    :ivar INHERIT: The current node should implement the same behavior as the parent node. If the root
+        node is evaluated and it is set to inherit (or not set at all) the property is set to
+        {@link #SEPARATE_CHILDREN}.
+
+    :ivar INCLUDE_CHILDREN: The children of the current node should be included in the current layout
+        run. This enables edges to be routed across the boundary of hierarchy layers.
+
+    :ivar SEPARATE_CHILDREN: The children of the current node are layouted independently from their
+        parent node. The resulting layout information is then used to layout the parent node.
+
+    The inclusion of further children can be disabled by setting the option back to SEPARATE_CHILDREN
+    at lower levels. For this option to have any effect, the option needs to be set to at least two
+    successive levels of hierarchy.
+
+    If the layout algorithm doesn't support hierarchical layout, this property is ignored and the
+    layout is calculated separately for each child hierarchy.
+
+    :note: Layout algorithms only need to differentiate between INCLUDE_CHILDREN and
+        SEPARATE_CHILDREN as the inheritance is evaluated by ELK.
+    """
+    INHERIT = 0
+    INCLUDE_CHILDREN = 1
+    SEPARATE_CHILDREN = 2

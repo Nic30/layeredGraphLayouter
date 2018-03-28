@@ -137,15 +137,16 @@ def inNorthSouthEastWestOrder(node: LNode, side: PortSide):
 
 
 def getPorts(node: LNode, side: PortSide, topDown: bool):
+    ports = node.getPortSideView(side)
     if side == PortSide.EAST:
         if topDown:
-            return node.getPortSideView(side)
+            return ports
         else:
-            return reversed(node.getPortSideView(side))
+            return reversed(ports)
     elif topDown:
-        return reversed(node.getPortSideView(side))
+        return reversed(ports)
     else:
-        return node.getPortSideView(side)
+        return ports
 
 
 def getNorthSouthPortsWithIncidentEdges(node: LNode, side: PortSide):
@@ -486,8 +487,8 @@ class CrossingsCounter():
         numPorts = len(ports)
         if getCardinalities:
             nodeCardinalities = self.nodeCardinalities = {n: 0 for n in nodes}
-        poss = self.portPositions
 
+        poss = self.portPositions
         for node in reverseForTopDown(nodes, topDown):
             nodePorts = list(getPorts(node, side, topDown))
             if getCardinalities:

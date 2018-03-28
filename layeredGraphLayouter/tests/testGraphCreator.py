@@ -910,8 +910,10 @@ class TestGraphCreator():
     def makeLayers(self, amount: int):
         return self.makeLayersInGraph(amount, self.graph)
 
-    def makeLayer(self):
-        return self.makeLayerInGraph(self.graph)
+    def makeLayer(self, graph=None):
+        if graph is None:
+            graph = self.graph
+        return self.makeLayerInGraph(graph)
 
     @staticmethod
     def makeLayerInGraph(g: LGraph):
@@ -979,9 +981,9 @@ class TestGraphCreator():
         ||  *
         | \
         ----*
-        
+
         Port order not fixed.
-        
+
         :return: Graph of the form above.
         """
         addNodesToLayer = self.addNodesToLayer
@@ -1029,18 +1031,18 @@ class TestGraphCreator():
     def addExternalPortDummyNodeToLayer(self, layer, port: LPort):
         node = self.addNodeToLayer(layer)
         node.origin = port
-        node.setType(NodeType.EXTERNAL_PORT)
+        node.type = NodeType.EXTERNAL_PORT
         node.extPortSide = port.side
         port.portDummy = node
         port.insideConnections = True
-        node.getGraph().p_externalPorts = True
+        node.graph.p_externalPorts = True
         return node
 
     def addExternalPortDummiesToLayer(self, layer, ports: List[LPort]):
         nodes = []
         side = ports[0].side
         for i in range(len(ports)):
-            portIndex = i if side == PortSide.EAST else ports.length - 1 - i
+            portIndex = i if side == PortSide.EAST else len(ports) - 1 - i
             obj = self.addExternalPortDummyNodeToLayer(layer, ports[portIndex])
             nodes.append(obj)
 
@@ -1058,10 +1060,9 @@ class TestGraphCreator():
         return nestedGraph
 
     def switchOrderOfNodesInLayer(self, nodeOne: int, nodeTwo: int, layer):
-        nodes = layer.getNodes()
-        firstNode = nodes.get(nodeOne)
-        secondNode = nodes.get(nodeTwo)
-        switchedList = list(nodes)
+        firstNode = layer[nodeOne]
+        secondNode = layer[nodeTwo]
+        switchedList = list(layer)
         switchedList[nodeOne] = secondNode
         switchedList[nodeTwo] = firstNode
         return switchedList
@@ -1201,3 +1202,10 @@ class TestGraphCreator():
 
     def addNodesToLayer(self, amountOfNodes: int, leftLayer: LNodeLayer):
         return [self.addNodeToLayer(leftLayer) for _ in range(amountOfNodes)]
+
+    def iterAllGraphs(self, root: LGraph):
+        yield root
+
+        for node in root.nodes:
+            if node.nestedLgraph:
+                yield from self.iterAllGraphs(node.nestedLgraph)

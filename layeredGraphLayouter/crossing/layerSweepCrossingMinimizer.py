@@ -3,7 +3,8 @@ from math import inf
 from random import Random
 from typing import List
 
-from layeredGraphLayouter.containers.constants import PortSide
+from layeredGraphLayouter.containers.constants import PortSide, PortConstraints,\
+    NodeType, HierarchyHandling
 from layeredGraphLayouter.containers.lGraph import LGraph
 from layeredGraphLayouter.containers.lNode import LNode
 from layeredGraphLayouter.crossing.allCrossingsCounter import AllCrossingsCounter
@@ -27,11 +28,11 @@ def endIndex(isForwardSweep: bool, length: int):
     return length - 1 if isForwardSweep else 0
 
 
-def isOnEndOfSweepSide(port, isForwardSweep: bool) -> bool:
+def sideForStep(isForwardSweep: bool) -> PortSide:
     if isForwardSweep:
-        return port.side == PortSide.EAST
+        return PortSide.EAST
     else:
-        return port.side == PortSide.WEST
+        return PortSide.WEST
 
 
 def sideOpposedSweepDirection(isForwardSweep):
@@ -44,6 +45,10 @@ def isNotEnd(length, freeLayerIndex, isForwardSweep):
 
 def next_step(isForwardSweep: bool):
     return 1 if isForwardSweep else -1
+
+
+def isExternalPortDummy(firstNode: LNode) -> bool:
+    return firstNode.type == NodeType.EXTERNAL_PORT
 
 
 class LayerSweepCrossingMinimizer():
@@ -89,6 +94,10 @@ class LayerSweepCrossingMinimizer():
     :note: port from ELK
     """
 
+    def __init__(self):
+        self.randomSeed = 0
+        self.random = Random(self.randomSeed)
+
     def process(self, graph: LGraph):
         """
         Short-circuit cases in which no crossings can be minimized.
@@ -100,35 +109,49 @@ class LayerSweepCrossingMinimizer():
         """
 
         layers = graph.layers
-        self.randomSeed = 0
-        self.random = Random(self.randomSeed)
-        self.graphsWhoseNodeOrderChanged = set()
-        self.graphInfoHolders = {}
 
         emptyGraph = not layers or sum(len(l) for l in layers) == 0
         singleNode = len(layers) == 1 and len(layers[0]) == 1
 
-        # [TODO]
-        hierarchicalLayout = False
+        hierarchicalLayout = graph.hierarchyHandling == HierarchyHandling.INCLUDE_CHILDREN
 
         if emptyGraph or (singleNode and not hierarchicalLayout):
             return
 
-        _graphsToSweepOn = [graph, ]
+        graphsToSweepOn = self.initialize(graph)
+        root = self.graphInfoHolders[graph]
+        minimizingMethod = self.chooseMinimizingMethod(root)
+        self.minimizeCrossings(graphsToSweepOn, minimizingMethod)
+        self.transferNodeAndPortOrdersToGraph(graphsToSweepOn)
+
+    def initialize(self, rootGraph: LGraph) ->List[GraphInfoHolder]:
+        """
+        Traverses inclusion breadth-first and initializes each Graph.
+        """
+        self.graphsWhoseNodeOrderChanged = set()
+        self.graphInfoHolders = {}
+
+        self.random = rootGraph.random
+        self.randomSeed = self.random.random()
+
+        _graphsToSweepOn = deque([rootGraph, ])
         graphsToSweepOn = []
-        for g in _graphsToSweepOn:
+        while _graphsToSweepOn:
+            g = _graphsToSweepOn.pop()
             g.random = self.random
             gih = GraphInfoHolder(g,
                                   BarycenterHeuristic,
                                   NodeRelativePortDistributor,
                                   self.graphInfoHolders)
+            assert g not in self.graphInfoHolders
             self.graphInfoHolders[g] = gih
             graphsToSweepOn.append(gih)
+            _graphsToSweepOn.extend(g.childGraphs)
+            for n in g.nodes:
+                if n.nestedLgraph is not None:
+                    _graphsToSweepOn.append(n.nestedLgraph)
 
-        root = self.graphInfoHolders[graph]
-        minimizingMethod = self.chooseMinimizingMethod(root)
-        self.minimizeCrossings(graphsToSweepOn, minimizingMethod)
-        self.transferNodeAndPortOrdersToGraph(graphsToSweepOn)
+        return graphsToSweepOn
 
     def chooseMinimizingMethod(self, root: GraphInfoHolder):
         if not root.crossMinimizer.isDeterministic:
@@ -170,25 +193,30 @@ class LayerSweepCrossingMinimizer():
         totalCrossings = 0
         countCrossingsIn = deque()
         countCrossingsIn.append(currentGraph)
+        graphInfoHolders = self.graphInfoHolders
+
         while countCrossingsIn:
             gD = countCrossingsIn.pop()
             totalCrossings += gD.crossingsCounter.countAllCrossings(
                 gD.currentNodeOrder)
+
             for child in gD.childGraphs:
+                child = graphInfoHolders[child]
                 if child.dontSweepInto():
                     totalCrossings += self.countCurrentNumberOfCrossings(child)
+
         return totalCrossings
 
     def minimizeCrossingsWithCounter(self, gData):
-        isForwardSweep = bool(self.random.getrandbits(1))
         sweepReducingCrossings = self.sweepReducingCrossings
 
-        crossingsInGraph = self.countCurrentNumberOfCrossings(gData)
+        isForwardSweep = bool(self.random.getrandbits(1))
 
         gData.crossMinimizer.setFirstLayerOrder(
             gData.currentNodeOrder, isForwardSweep)
         sweepReducingCrossings(gData, isForwardSweep, True)
 
+        crossingsInGraph = self.countCurrentNumberOfCrossings(gData)
         countCurrentNumberOfCrossings = self.countCurrentNumberOfCrossings
         oldNumberOfCrossings = 0
         while True:
@@ -214,31 +242,32 @@ class LayerSweepCrossingMinimizer():
                     self.setPortOrderOnParentGraph(gData)
 
     def setPortOrderOnParentGraph(self, gData):
-        if (gData.hasExternalPorts()):
+        if (gData.hasExternalPorts):
             bestSweep = gData.getBestSweep()
             # Sort ports on left and right side of the parent node
             self.sortPortsByDummyPositionsInLastLayer(
-                bestSweep.nodes, gData.parent, True)
+                bestSweep.nodeOrder, gData.parent, True)
             self.sortPortsByDummyPositionsInLastLayer(
-                bestSweep.nodes, gData.parent, False)
-            #gData.parent().setProperty(LayeredOptions.PORT_CONSTRAINTS, PortConstraints.FIXED_ORDER)
+                bestSweep.nodeOrder, gData.parent, False)
+            gData.parent.portConstraints = PortConstraints.FIXED_ORDER
 
     def sortPortsByDummyPositionsInLastLayer(self,
                                              nodeOrder: List[List[LNode]],
-                                             parent, onRightMostLayer: bool):
-        _endIndex = endIndex(onRightMostLayer, nodeOrder.length)
+                                             parent,
+                                             onRightMostLayer: bool):
+        _endIndex = endIndex(onRightMostLayer, len(nodeOrder))
         lastLayer = nodeOrder[_endIndex]
-        if not lastLayer[0].isExternalPortDummy:
+        if not isExternalPortDummy(lastLayer[0]):
             return
 
-        j = firstIndex(onRightMostLayer, lastLayer.length)
-        ports = parent.getPorts()
-        for i in range(i, len(ports)):
+        j = firstIndex(onRightMostLayer, len(lastLayer))
+        ports = parent.getPortSideView(sideForStep(onRightMostLayer))
+        step = next_step(onRightMostLayer)
+        for i in range(len(ports)):
             port = ports[i]
-            if (isOnEndOfSweepSide(port, onRightMostLayer)
-                    and port.isHierarchical):
+            if port.insideConnections:
                 ports[i] = lastLayer[j].origin
-                j += next(onRightMostLayer)
+                j += step
 
     def transferNodeAndPortOrdersToGraph(self, graphsToSweepOn):
         for gD in graphsToSweepOn:
@@ -310,7 +339,7 @@ class LayerSweepCrossingMinimizer():
         nestedGraph = self.graphInfoHolders[nestedLGraph]
         nestedGraphNodeOrder = nestedGraph.currentNodeOrder
         startIndex = firstIndex(
-            isForwardSweep, nestedGraphNodeOrder.length)
+            isForwardSweep, len(nestedGraphNodeOrder))
         firstNode = nestedGraphNodeOrder[startIndex][0]
 
         if firstNode.isExternalPortDummy:

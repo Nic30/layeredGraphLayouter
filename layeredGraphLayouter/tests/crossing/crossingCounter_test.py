@@ -10,7 +10,7 @@ from layeredGraphLayouter.tests.inLayerEdgeTestGraphCreator import InLayerEdgeTe
 from layeredGraphLayouter.crossing.barycenterHeuristic import BarycenterHeuristic
 from layeredGraphLayouter.crossing.nodeRelativePortDistributor import NodeRelativePortDistributor
 from layeredGraphLayouter.tests.exampleGraphsSimple import create_dualDualCros,\
-    create_quadEdgeCross, create_dualPortCross_post
+    create_quadEdgeCross, create_dualPortCross_post, create_dualPortCross_pre
 
 
 class CrossingsCounterTC(unittest.TestCase):
@@ -67,6 +67,12 @@ class CrossingsCounterTC(unittest.TestCase):
             order()[0], PortSide.EAST), 1)
 
     def test_countCrossingsBetweenLayers_crossFormed(self):
+        """
+        *  *
+         \/
+         /\
+        *  *
+        """
         gb = self.gb
         gb.getCrossFormedGraph()
 
@@ -301,6 +307,28 @@ class CrossingsCounterTC(unittest.TestCase):
     #
     #    System.out.println(Arrays.stream(times).min())
     #
+
+    def test_dualPortCross_pre_and_unconnected(self):
+        """
+        *  ___
+         \/| |
+         /\|_|
+        *  ___
+           |_|
+        """
+        gb = self.gb
+        order = self.order
+        graph = create_dualPortCross_pre(gb)
+        gb.addNodeToLayer(graph.layers[1])
+
+        self.counter = CrossingsCounter(self.getInitPortOrder())
+        self.counter.initForCountingBetween(order()[0], order()[1])
+        ports = list(graph.layers[1][0].iterPorts())
+        crossings = self.counter.countCrossingsBetweenPortsInBothOrders(
+            ports[0],
+            ports[1]
+        )
+        self.assertEqual(crossings[0], 1)
 
     def makeTwoLayerRandomGraphWithNodesPerLayer(self, numNodes: int, edgesPerNode: int):
         gb = self.gb

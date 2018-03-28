@@ -172,6 +172,13 @@ class LNode():
         #    # because the order of the ports on one side can change.
         #    return self.ports[indices[0]:indices[1]]
 
+    def getOutgoingEdges(self):
+        """
+        :return: a generator or all outgoing edges.
+        """
+        for port in self.iterPorts():
+            yield from port.outgoingEdges
+
     def setLayer(self, layer):
         self.layer = layer
 

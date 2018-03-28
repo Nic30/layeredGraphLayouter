@@ -1,7 +1,10 @@
+from random import Random
+
+from layeredGraphLayouter.containers.constants import PortConstraints,\
+    HierarchyHandling
+from layeredGraphLayouter.containers.lEdge import LEdge
 from layeredGraphLayouter.containers.lNode import LNode
 from layeredGraphLayouter.containers.lPort import LPort
-from layeredGraphLayouter.containers.lEdge import LEdge
-from layeredGraphLayouter.containers.constants import PortConstraints
 
 
 class LNodeLayer(list):
@@ -32,7 +35,7 @@ class LGraph():
         self.parentLnode = None
         self.graphProperties = set()
         self.edgeRouting = None
-        self.random = None
+        self.random = Random()
 
         self.thoroughness = 1
         self.crossingMinimizationHierarchicalSweepiness = 1
@@ -57,6 +60,7 @@ class LGraph():
         self.p_endLabels = False
         # The graph's nodes are partitioned.
         self.p_partitions = False
+        self.hierarchyHandling = HierarchyHandling.INCLUDE_CHILDREN
 
     def getLayerlessNodes(self):
         """
