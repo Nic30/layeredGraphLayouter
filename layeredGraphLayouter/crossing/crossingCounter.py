@@ -101,7 +101,8 @@ southern nsl dummies with eastern edges south-to-north
 from collections import deque
 from typing import List, Tuple, Dict, Deque
 
-from layeredGraphLayouter.containers.constants import PortSide, NodeType
+from layeredGraphLayouter.containers.constants import PortSide, NodeType,\
+    PortType
 from layeredGraphLayouter.containers.lEdge import LEdge
 from layeredGraphLayouter.containers.lNode import LNode
 from layeredGraphLayouter.containers.lPort import LPort
@@ -189,7 +190,6 @@ class CrossingsCounter():
         self.portPositions = portPositions
         self.indexTree = None
         self.ends = deque()
-
         self.nodeCardinalities = {}
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -264,16 +264,14 @@ class CrossingsCounter():
 
     def countInLayerCrossingsBetweenNodesInBothOrders(self, upperNode, lowerNode, side):
         """
-        Count crossings caused between edges incident to upperNode and lowerNode and when the order of these two is
-        switched. Initialize before use with {@link #initPortPositionsForInLayerCrossings(LNode[], PortSide)}.
+        Count crossings caused between edges incident to upperNode and lowerNode
+        and when the order of these two is switched. Initialize before use
+        with {@link #initPortPositionsForInLayerCrossings(LNode[], PortSide)}.
 
-        :param upperNode
-                   the upper node
-        :param lowerNode
-                   the lower node
-        :param side
-                   the side on which to count
-        :return tuple of integers (the crossings in the unswitched,
+        :param upperNode: the upper node
+        :param lowerNode: the lower node
+        :param side: the side on which to count
+        :return: tuple of integers (the crossings in the unswitched,
                                    the crossings in the switched order)
         """
         ports = self.connectedInLayerPortsSortedByPosition(
@@ -392,15 +390,46 @@ class CrossingsCounter():
         indexTree = self.indexTree
         ends = self.ends
 
+        targetsAndDegrees = []
+        NORMAL, LONG_EDGE, NORTH_SOUTH_PORT = NodeType.NORMAL, NodeType.LONG_EDGE, NodeType.NORTH_SOUTH_PORT
         for port in ports:
             po = poss[port]
             indexTree.removeAll(po)
+            # collect the edges that are incident to the port,
+            # which is a bit tedious since north/south ports have no physical
+            # edge within the graph at this point
+            t = port.getNode().type
+
+            if t == NORMAL:
+                #dummy = port.portDummy
+                ## guarded in #initPositionsForNorthSouthCounting(...)
+                #assert dummy is not None
+                #for p in dummy.iterPorts():
+                #    # western and eastern
+                #    targetsAndDegrees.append((p, p.getDegree()))
+                node = port.getNode()
+                # guarded in #initPositionsForNorthSouthCounting(...)
+                for p in node.iterPorts():
+                    # western and eastern
+                    targetsAndDegrees.append((p, p.getDegree()))
+
+            elif t == LONG_EDGE:
+                for p in port.getNode().iterPorts():
+                    if p is port:
+                        continue
+                    # add an edge to the dummy's other port
+                    targetsAndDegrees.append((p, p.getDegree()))
+                    # only for first
+                    break
+            elif t == NORTH_SOUTH_PORT:
+                dummyPort = port.origin
+                targetsAndDegrees.append((dummyPort, port.getDegree()))
+
             # First get crossings for all edges.
-            for edge in port.iterEdges():
-                other = otherEndOf(edge, port)
+            for other, degre in targetsAndDegrees:
                 endPosition = poss[other]
                 if endPosition > poss[port]:
-                    crossings += indexTree.rank(endPosition)
+                    crossings += indexTree.rank(endPosition) * degre
                     ends.append(endPosition)
 
             # Then add end points.

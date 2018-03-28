@@ -58,11 +58,13 @@ class AllCrossingsCounter():
         if not currentOrder:
             return 0
 
+        # count crossings on sides
         crossings = self.crossingCounter.countInLayerCrossingsOnSide(
             currentOrder[0], PortSide.WEST)
         crossings += self.crossingCounter.countInLayerCrossingsOnSide(
             currentOrder[len(currentOrder) - 1], PortSide.EAST)
 
+        # cond crossing between layers
         countCrossingsAt = self.countCrossingsAt
         for layerIndex in range(len(currentOrder)):
             crossings += countCrossingsAt(layerIndex, currentOrder)
@@ -83,8 +85,10 @@ class AllCrossingsCounter():
                 totalCrossings += self.crossingCounter.countInLayerCrossingsOnSide(
                     rightLayer, PortSide.WEST)
             else:
+                print(leftLayer, rightLayer)
                 totalCrossings = self.crossingCounter.countCrossingsBetweenLayers(
                     leftLayer, rightLayer)
+                print(totalCrossings)
 
         if self.hasNorthSouthPorts[layerIndex]:
             totalCrossings += self.crossingCounter.countNorthSouthPortCrossingsInLayer(
