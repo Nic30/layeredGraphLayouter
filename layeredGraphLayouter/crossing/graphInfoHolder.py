@@ -61,13 +61,13 @@ class GraphInfoHolder():
         # calculate whether we need to use bottom up or sweep into this graph.
         self.useBottomUp = layerSweepTypeDecider.useBottomUp()
 
-    def dontSweepInto(self):
+    def dontSweepInto(self) -> bool:
         """
         :return: the processRecursively
         """
         return self.useBottomUp
 
-    def getBestSweep(self):
+    def getBestSweep(self) -> "SweepCopy":
         """
         :return Copy of node order for currently best sweep.
         """
@@ -76,10 +76,10 @@ class GraphInfoHolder():
         else:
             return self.bestNodeAndPortOrder
 
-    def crossMinDeterministic(self):
+    def crossMinDeterministic(self) -> bool:
         return self.crossMinimizer.isDeterministic
 
-    def crossMinAlwaysImproves(self):
+    def crossMinAlwaysImproves(self) -> bool:
         """
         :return: whether this CrossingMinimizer always improves
         """

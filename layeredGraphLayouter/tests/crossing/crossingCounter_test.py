@@ -10,7 +10,7 @@ from layeredGraphLayouter.tests.inLayerEdgeTestGraphCreator import InLayerEdgeTe
 from layeredGraphLayouter.crossing.barycenterHeuristic import BarycenterHeuristic
 from layeredGraphLayouter.crossing.nodeRelativePortDistributor import NodeRelativePortDistributor
 from layeredGraphLayouter.tests.exampleGraphsSimple import create_dualDualCros,\
-    create_quadEdgeCross
+    create_quadEdgeCross, create_dualPortCross_post, create_dualPortCross_pre
 
 
 class CrossingsCounterTC(unittest.TestCase):
@@ -67,6 +67,12 @@ class CrossingsCounterTC(unittest.TestCase):
             order()[0], PortSide.EAST), 1)
 
     def test_countCrossingsBetweenLayers_crossFormed(self):
+        """
+        *  *
+         \/
+         /\
+        *  *
+        """
         gb = self.gb
         gb.getCrossFormedGraph()
 
@@ -115,7 +121,7 @@ class CrossingsCounterTC(unittest.TestCase):
         gb.getCrossWithManySelfLoopsGraph()
         counter = CrossingsCounter(self.getInitPortOrder())
         cnt = counter.countCrossingsBetweenLayers(
-                order()[0], order()[1])
+            order()[0], order()[1])
         self.assertEqual(cnt, 1)
 
     def test_countCrossingsBetweenLayers_moreComplexThreeLayerGraph(self):
@@ -188,31 +194,29 @@ class CrossingsCounterTC(unittest.TestCase):
         counter = CrossingsCounter(self.getInitPortOrder())
         counter.initForCountingBetween(leftNodes, rightNodes)
         ports = list(rightNodes[1].iterPorts())
-        self.assertEqual(counter.countCrossingsBetweenPortsInBothOrders(
+        crossings = counter.countCrossingsBetweenPortsInBothOrders(
             ports[1],
-            ports[0])[0], 1)
+            ports[0])
+        self.assertEqual(crossings[0], 1)
 
-    def test_countCrossingsBetweenPorts_GivenCrossingsOnEasternSide_(self):
+    def test_countCrossingsBetweenPorts_GivenCrossingsOnEasternSide(self):
         """
         ___
         | |\/*
         |_|/\*
         """
         gb = self.gb
-        leftNodes = gb.addNodesToLayer(1, gb.makeLayer())
-        rightNodes = gb.addNodesToLayer(2, gb.makeLayer())
-        leftN = leftNodes[0]
-        gb.eastWestEdgeFromTo(leftN, rightNodes[1])
-        gb.eastWestEdgeFromTo(leftN, rightNodes[0])
+        create_dualPortCross_post(gb)
+        leftNodes, rightNodes = gb.graph.layers
 
         counter = CrossingsCounter(self.getInitPortOrder())
         counter.initForCountingBetween(leftNodes, rightNodes)
-        ports = list(leftN.iterPorts())
-        self.assertEqual(counter
-                         .countCrossingsBetweenPortsInBothOrders(
-                             ports[0],
-                             ports[1]
-                         )[0], 1)
+        ports = list(leftNodes[0].iterPorts())
+        crossings = counter.countCrossingsBetweenPortsInBothOrders(
+            ports[0],
+            ports[1]
+        )
+        self.assertEqual(crossings[0], 1)
 
     def test_countingTwoDifferentGraphs_DoesNotInterfereWithEachOther(self):
         """
@@ -304,6 +308,28 @@ class CrossingsCounterTC(unittest.TestCase):
     #    System.out.println(Arrays.stream(times).min())
     #
 
+    def test_dualPortCross_pre_and_unconnected(self):
+        """
+        *  ___
+         \/| |
+         /\|_|
+        *  ___
+           |_|
+        """
+        gb = self.gb
+        order = self.order
+        graph = create_dualPortCross_pre(gb)
+        gb.addNodeToLayer(graph.layers[1])
+
+        self.counter = CrossingsCounter(self.getInitPortOrder())
+        self.counter.initForCountingBetween(order()[0], order()[1])
+        ports = list(graph.layers[1][0].iterPorts())
+        crossings = self.counter.countCrossingsBetweenPortsInBothOrders(
+            ports[0],
+            ports[1]
+        )
+        self.assertEqual(crossings[0], 1)
+
     def makeTwoLayerRandomGraphWithNodesPerLayer(self, numNodes: int, edgesPerNode: int):
         gb = self.gb
         leftNodes = gb.addNodesToLayer(numNodes, gb.makeLayer())
@@ -328,7 +354,8 @@ class CrossingsCounterTC(unittest.TestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(CrossingsCounterTC('test_countCrossingsBetweenPorts_GivenCrossingsOnEasternSide_'))
+    #suite.addTest(CrossingsCounterTC(
+    #    'test_countCrossingsBetweenPorts_GivenCrossingsOnEasternSide'))
     suite.addTest(unittest.makeSuite(CrossingsCounterTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

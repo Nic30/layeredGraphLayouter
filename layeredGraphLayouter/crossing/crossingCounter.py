@@ -137,15 +137,16 @@ def inNorthSouthEastWestOrder(node: LNode, side: PortSide):
 
 
 def getPorts(node: LNode, side: PortSide, topDown: bool):
+    ports = node.getPortSideView(side)
     if side == PortSide.EAST:
         if topDown:
-            return node.getPortSideView(side)
+            return ports
         else:
-            return reversed(node.getPortSideView(side))
+            return reversed(ports)
     elif topDown:
-        return reversed(node.getPortSideView(side))
+        return reversed(ports)
     else:
-        return node.getPortSideView(side)
+        return ports
 
 
 def getNorthSouthPortsWithIncidentEdges(node: LNode, side: PortSide):
@@ -390,46 +391,13 @@ class CrossingsCounter():
         indexTree = self.indexTree
         ends = self.ends
 
-        targetsAndDegrees = []
-        NORMAL, LONG_EDGE, NORTH_SOUTH_PORT = NodeType.NORMAL, NodeType.LONG_EDGE, NodeType.NORTH_SOUTH_PORT
         for port in ports:
-            po = poss[port]
-            indexTree.removeAll(po)
-            # collect the edges that are incident to the port,
-            # which is a bit tedious since north/south ports have no physical
-            # edge within the graph at this point
-            t = port.getNode().type
-
-            if t == NORMAL:
-                #dummy = port.portDummy
-                ## guarded in #initPositionsForNorthSouthCounting(...)
-                #assert dummy is not None
-                #for p in dummy.iterPorts():
-                #    # western and eastern
-                #    targetsAndDegrees.append((p, p.getDegree()))
-                node = port.getNode()
-                # guarded in #initPositionsForNorthSouthCounting(...)
-                for p in node.iterPorts():
-                    # western and eastern
-                    targetsAndDegrees.append((p, p.getDegree()))
-
-            elif t == LONG_EDGE:
-                for p in port.getNode().iterPorts():
-                    if p is port:
-                        continue
-                    # add an edge to the dummy's other port
-                    targetsAndDegrees.append((p, p.getDegree()))
-                    # only for first
-                    break
-            elif t == NORTH_SOUTH_PORT:
-                dummyPort = port.origin
-                targetsAndDegrees.append((dummyPort, port.getDegree()))
-
+            indexTree.removeAll(poss[port])
             # First get crossings for all edges.
-            for other, degre in targetsAndDegrees:
-                endPosition = poss[other]
+            for edge in port.iterEdges():
+                endPosition = poss[otherEndOf(edge, port)]
                 if endPosition > poss[port]:
-                    crossings += indexTree.rank(endPosition) * degre
+                    crossings += indexTree.rank(endPosition)
                     ends.append(endPosition)
 
             # Then add end points.
@@ -519,8 +487,8 @@ class CrossingsCounter():
         numPorts = len(ports)
         if getCardinalities:
             nodeCardinalities = self.nodeCardinalities = {n: 0 for n in nodes}
-        poss = self.portPositions
 
+        poss = self.portPositions
         for node in reverseForTopDown(nodes, topDown):
             nodePorts = list(getPorts(node, side, topDown))
             if getCardinalities:

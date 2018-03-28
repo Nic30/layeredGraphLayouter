@@ -105,7 +105,7 @@ def create_quadEdgeCross(gb) -> LGraph:
      \\//
      //\\
     *    *
-    
+
     :return: Graph of the form above.
     """
     leftLayer = gb.makeLayer()

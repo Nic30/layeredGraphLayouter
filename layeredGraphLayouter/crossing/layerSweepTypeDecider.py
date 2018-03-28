@@ -9,8 +9,10 @@ from layeredGraphLayouter.containers.lPort import LPort
 
 class NodeInfo():
     """
-    For a single node, collects number of paths to nodes with random or hierarchical nodes.
+    For a single node, collects number of paths to nodes with random
+    or hierarchical nodes.
     """
+
     def __init__(self):
         self.connectedEdges = 0
         self.hierarchicalInfluence = 0
@@ -27,23 +29,54 @@ class NodeInfo():
                 + ", randomInfluence=" + self.randomInfluence + "]>")
 
 
+def bottomUpForced(boundary: float):
+    return boundary < -1
+
+
+def hasNoEasternPorts(node: LNode):
+    return not bool(node.east)
+
+
+def hasNoWesternPorts(node: LNode):
+    return not bool(node.west)
+
+
+def isExternalPortDummy(node: LNode):
+    return node.type == NodeType.EXTERNAL_PORT
+
+
+def isNorthSouthDummy(node: LNode):
+    return node.type == NodeType.NORTH_SOUTH_PORT
+
+
+def originPort(node: LNode) -> LPort:
+    return node.origin
+
+
+def isEasternDummy(node: LNode):
+    return originPort(node).side == PortSide.EAST
+
+
 class LayerSweepTypeDecider():
     """
-    In order to decide whether to sweep into the graph or not, we compare the number of paths to nodes whose position is
-    decided on by random decisions to the number of paths to nodes whose position depends on cross-hierarchy edges. By
-    calculating (pathsToRandom - pathsToHierarchical) / allPaths, this value will always be between -1 (many cross
-    hierarchical paths) and +1 (many random paths). By setting the boundary
-    CROSSING_MINIMIZATION_HIERARCHICAL_SWEEPINESS, we can choose how likely it is to be hierarchical or more bottom up.
+    In order to decide whether to sweep into the graph or not, we compare
+    the number of paths to nodes whose position is decided on by random decisions
+    to the number of paths to nodes whose position depends on cross-hierarchy edges.
+    By calculating (pathsToRandom - pathsToHierarchical) / allPaths, this value
+    will always be between -1 (many cross hierarchical paths) and +1 (many random paths).
+    By setting the boundary CROSSING_MINIMIZATION_HIERARCHICAL_SWEEPINESS,
+    we can choose how likely it is to be hierarchical or more bottom up.
     """
 
     def __init__(self, graphData: "GraphInfoHolder"):
         """
         Creates LayerSweepTypeDecider for deciding whether to sweep into graphs or not.
 
-        :param graphData: the graph holder object for auxiliary graph information needed in crossing minimization
+        :param graphData: the graph holder object for auxiliary graph
+            information needed in crossing minimization
         """
         self.graphData = graphData
-        self.nodeInfo = {}
+        self.nodeInfo = {n: NodeInfo() for n in graphData.lGraph.nodes}
 
     def useBottomUp(self) -> bool:
         """
@@ -52,7 +85,7 @@ class LayerSweepTypeDecider():
         @return decision
         """
         boundary = self.graphData.lGraph.crossingMinimizationHierarchicalSweepiness
-        if (self.bottomUpForced(boundary)
+        if (bottomUpForced(boundary)
                 or self.rootNode()
                 or self.fixedPortOrder()
                 or self.fewerThanTwoInOutEdges()):
@@ -67,20 +100,21 @@ class LayerSweepTypeDecider():
         nsPortDummies = []
         for layer in self.graphData.currentNodeOrder:
             for node in layer:
-                # We must visit all sources of edges first, so we collect north south dummies for later.
-                if (self.isNorthSouthDummy(node)):
+                # We must visit all sources of edges first, so we collect north
+                # south dummies for later.
+                if isNorthSouthDummy(node):
                     nsPortDummies.add(node)
                     continue
 
-                currentNode = self.nodeInfoFor(node)
+                currentNode = self.nodeInfo[node]
                 # Check for hierarchical port dummies or random influence.
-                if self.isExternalPortDummy(node):
+                if isExternalPortDummy(node):
                     currentNode.hierarchicalInfluence = 1
-                    if self.isEasternDummy(node):
+                    if isEasternDummy(node):
                         pathsToHierarchical += currentNode.connectedEdges
-                elif self.hasNoWesternPorts(node):
+                elif hasNoWesternPorts(node):
                     currentNode.randomInfluence = 1
-                elif self.hasNoEasternPorts(node):
+                elif hasNoEasternPorts(node):
                     pathsToRandom += currentNode.connectedEdges
 
                 # Increase counts of paths by the number outgoing edges times the influence
@@ -90,7 +124,8 @@ class LayerSweepTypeDecider():
                     pathsToHierarchical += currentNode.hierarchicalInfluence
                     self.transferInfoToTarget(currentNode, edge)
 
-                # Do the same for north/south dummies: Increase counts of paths by the number outgoing edges times the
+                # Do the same for north/south dummies: Increase counts of paths
+                # by the number outgoing edges times the
                 # influence and transfer information to dummies.
                 northSouthPorts = list(chain(node.getPortSideView(PortSide.NORTH),
                                              node.getPortSideView(PortSide.SOUTH)))
@@ -103,7 +138,7 @@ class LayerSweepTypeDecider():
 
             # Now process nsPortDummies
             for node in nsPortDummies:
-                currentNode = self.nodeInfoFor(node)
+                currentNode = self.nodeInfo[node]
                 for edge in node.getOutgoingEdges():
                     pathsToRandom += currentNode.randomInfluence
                     pathsToHierarchical += currentNode.hierarchicalInfluence
@@ -112,50 +147,28 @@ class LayerSweepTypeDecider():
             nsPortDummies.clear()
 
         allPaths = pathsToRandom + pathsToHierarchical
-        normalized = inf if allPaths == 0 else (pathsToRandom - pathsToHierarchical) / allPaths
+        if allPaths == 0:
+            normalized = inf
+        else:
+            normalized = (pathsToRandom - pathsToHierarchical) / allPaths
+
         return normalized >= boundary
 
     def fixedPortOrder(self) -> bool:
         return self.graphData.parent.portConstraints.isOrderFixed()
 
     def transferInfoToTarget(self, currentNode: NodeInfo, edge: LEdge) -> None:
-        target = self.targetNode(edge)
-        self.transferInfoTo(currentNode, target)
+        self.transferInfoTo(currentNode, edge.dstNode)
 
     def transferInfoTo(self, currentNode: NodeInfo, target: LNode):
-        targetNodeInfo = self.nodeInfoFor(target)
+        targetNodeInfo = self.nodeInfo[target]
         targetNodeInfo.transfer(currentNode)
         targetNodeInfo.connectedEdges += 1
 
     def fewerThanTwoInOutEdges(self):
         p = self.graphData.parent
-        return (p.getPortSideView(PortSide.EAST).size() < 2
-                and p.getPortSideView(PortSide.WEST).size() < 2)
+        return (len(p.getPortSideView(PortSide.EAST)) < 2
+                and len(p.getPortSideView(PortSide.WEST)) < 2)
 
     def rootNode(self):
         return not self.graphData.hasParent
-
-    @staticmethod
-    def bottomUpForced(boundary: float):
-        return boundary < -1
-
-    def hasNoEasternPorts(self, node: LNode):
-        return not bool(node.east)
-
-    def hasNoWesternPorts(self, node: LNode):
-        return not bool(node.west)
-
-    def isExternalPortDummy(self, node: LNode):
-        return node.type == NodeType.EXTERNAL_PORT
-
-    def isNorthSouthDummy(self, node: LNode):
-        return node.type == NodeType.NORTH_SOUTH_PORT
-
-    def isEasternDummy(self, node: LNode):
-        return self.originPort(node).side == PortSide.EAST
-
-    def originPort(self, node: LNode) -> LPort:
-        return node.origin
-
-    def nodeInfoFor(self, node: LNode) -> LPort:
-        return self.nodeInfo[node]

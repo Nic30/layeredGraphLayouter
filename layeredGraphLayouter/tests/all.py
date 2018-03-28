@@ -7,6 +7,7 @@ from layeredGraphLayouter.tests.crossing.abstractBarycenterPortDistributor_test 
 from layeredGraphLayouter.tests.crossing.barycenterHeuristic_test import BarycenterHeuristicTC
 from layeredGraphLayouter.tests.crossing.binaryIndexedTree_test import BinaryIndexedTreeTC
 from layeredGraphLayouter.tests.crossing.crossingCounter_test import CrossingsCounterTC
+from layeredGraphLayouter.tests.crossing.layerSweepCrossingMinimizer_test import LayerSweepCrossingMinimizerTC
 from layeredGraphLayouter.tests.cycleBreaker_test import CycleBreakerTC
 from layeredGraphLayouter.tests.layer_test import LayerTC
 
@@ -19,6 +20,7 @@ TCS = [
     AbstractBarycenterPortDistributorTC,
     BarycenterHeuristicTC,
     CrossingsCounterTC,
+    LayerSweepCrossingMinimizerTC,
 ]
 
 if __name__ == "__main__":
