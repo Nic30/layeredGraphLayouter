@@ -5,6 +5,8 @@ from layeredGraphLayouter.containers.constants import PortSide
 from layeredGraphLayouter.crossing.graphInfoHolder import GraphInfoHolder
 from layeredGraphLayouter.crossing.barycenterHeuristic import BarycenterHeuristic
 from layeredGraphLayouter.crossing.nodeRelativePortDistributor import NodeRelativePortDistributor
+from layeredGraphLayouter.tests.exampleGraphsSimple import create_dualPortCross_pre,\
+    create_dualPortCross_post
 
 
 class AbstractBarycenterPortDistributorTC(unittest.TestCase):
@@ -19,11 +21,7 @@ class AbstractBarycenterPortDistributorTC(unittest.TestCase):
         *  |_|
         """
         gb = self.gb
-        leftNodes = gb.addNodesToLayer(2, gb.makeLayer())
-        rightNode = gb.addNodeToLayer(gb.makeLayer())
-        gb.eastWestEdgeFromTo(leftNodes[0], rightNode)
-        gb.eastWestEdgeFromTo(leftNodes[1], rightNode)
-
+        rightNode = create_dualPortCross_pre(gb, fixedNodes=False).layers[1][0]
         _ports = rightNode.west
         expectedPortOrderRightNode = [_ports[1], _ports[0]]
 
@@ -75,11 +73,7 @@ class AbstractBarycenterPortDistributorTC(unittest.TestCase):
         |_|/ \-*
         """
         gb = self.gb
-
-        leftNode = gb.addNodeToLayer(gb.makeLayer())
-        rightNodes = gb.addNodesToLayer(2, gb.makeLayer())
-        gb.eastWestEdgeFromTo(leftNode, rightNodes[1])
-        gb.eastWestEdgeFromTo(leftNode, rightNodes[0])
+        leftNode = create_dualPortCross_post(gb, fixedNodes=False).layers[0][0]
 
         expectedPortOrderLeftNode = gb.copyPortsInIndexOrder(leftNode, 1, 0)
 

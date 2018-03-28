@@ -9,6 +9,8 @@ from layeredGraphLayouter.crossing.graphInfoHolder import GraphInfoHolder
 from layeredGraphLayouter.tests.inLayerEdgeTestGraphCreator import InLayerEdgeTestGraphCreator
 from layeredGraphLayouter.crossing.barycenterHeuristic import BarycenterHeuristic
 from layeredGraphLayouter.crossing.nodeRelativePortDistributor import NodeRelativePortDistributor
+from layeredGraphLayouter.tests.exampleGraphsSimple import create_dualDualCros,\
+    create_quadEdgeCross
 
 
 class CrossingsCounterTC(unittest.TestCase):
@@ -31,11 +33,7 @@ class CrossingsCounterTC(unittest.TestCase):
         |_|/\|_|
         """
         gb = self.gb
-
-        left = gb.addNodeToLayer(gb.makeLayer())
-        right = gb.addNodeToLayer(gb.makeLayer())
-        gb.eastWestEdgeFromTo(left, right)
-        gb.eastWestEdgeFromTo(left, right)
+        create_dualDualCros(gb)
 
         self.counter = CrossingsCounter(self.getInitPortOrder())
 
@@ -92,28 +90,7 @@ class CrossingsCounterTC(unittest.TestCase):
         """
         gb = self.gb
         order = self.order
-
-        leftLayer = gb.makeLayer()
-        rightLayer = gb.makeLayer()
-
-        topLeft = gb.addNodeToLayer(leftLayer)
-        bottomLeft = gb.addNodeToLayer(leftLayer)
-        topRight = gb.addNodeToLayer(rightLayer)
-        bottomRight = gb.addNodeToLayer(rightLayer)
-
-        topLeftTopPort = gb.addPortOnSide(topLeft, PortSide.EAST)
-        topLeftBottomPort = gb.addPortOnSide(topLeft, PortSide.EAST)
-        bottomRightBottomPort = gb.addPortOnSide(bottomRight, PortSide.WEST)
-        bottomRightTopPort = gb.addPortOnSide(bottomRight, PortSide.WEST)
-        gb.addEdgeBetweenPorts(topLeftTopPort, bottomRightTopPort)
-        gb.addEdgeBetweenPorts(topLeftBottomPort, bottomRightBottomPort)
-
-        bottomLeftTopPort = gb.addPortOnSide(bottomLeft, PortSide.EAST)
-        bottomLeftBottomPort = gb.addPortOnSide(bottomLeft, PortSide.EAST)
-        topRightBottomPort = gb.addPortOnSide(topRight, PortSide.WEST)
-        topRightTopPort = gb.addPortOnSide(topRight, PortSide.WEST)
-        gb.addEdgeBetweenPorts(bottomLeftTopPort, topRightTopPort)
-        gb.addEdgeBetweenPorts(bottomLeftBottomPort, topRightBottomPort)
+        create_quadEdgeCross(gb)
 
         gd = GraphInfoHolder(gb.graph, BarycenterHeuristic,
                              NodeRelativePortDistributor, None)

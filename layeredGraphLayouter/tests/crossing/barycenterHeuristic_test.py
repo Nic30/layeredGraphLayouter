@@ -7,6 +7,8 @@ from layeredGraphLayouter.crossing.barycenterHeuristic import BarycenterHeuristi
 from layeredGraphLayouter.crossing.forsterConstraintResolver import ForsterConstraintResolver
 from layeredGraphLayouter.crossing.nodeRelativePortDistributor import NodeRelativePortDistributor
 from layeredGraphLayouter.tests.testGraphCreator import TestGraphCreator
+from layeredGraphLayouter.tests.exampleGraphsSimple import create_extendedCross,\
+    create_dualPortCross_pre, create_dualPortCross_post, create_simpleCross
 
 
 class BarycenterHeuristicTC(unittest.TestCase):
@@ -22,81 +24,56 @@ class BarycenterHeuristicTC(unittest.TestCase):
         *  *
         """
         gb = self.gb
-        leftNodes = gb.addNodesToLayer(2, gb.makeLayer())
-        rightNodes = gb.addNodesToLayer(2, gb.makeLayer())
-        gb.eastWestEdgeFromTo(leftNodes[0], rightNodes[1])
-        gb.eastWestEdgeFromTo(leftNodes[1], rightNodes[0])
-        nodes = gb.graph.layers
+        layers = create_simpleCross(gb).layers
 
         portDist = NodeRelativePortDistributor(gb.random, gb.graph)
-        constraintResolver = ForsterConstraintResolver(nodes)
+        constraintResolver = ForsterConstraintResolver(layers)
 
-        portDist.calculatePortRanks_many(nodes[0], PortType.OUTPUT)
+        portDist.calculatePortRanks_many(layers[0], PortType.OUTPUT)
         crossMin = BarycenterHeuristic(
-            constraintResolver, self.random, portDist, nodes)
+            constraintResolver, self.random, portDist, layers)
 
-        expectedOrder = gb.switchOrderInArray(0, 1, nodes[1])
-        self.minimizeCrossings(crossMin, nodes[1], False, False, True)
+        expectedOrder = gb.switchOrderInArray(0, 1, layers[1])
+        self.minimizeCrossings(crossMin, layers[1], False, False, True)
 
-        self.assertSequenceEqual(expectedOrder, nodes[1])
+        self.assertSequenceEqual(expectedOrder, layers[1])
 
     def test_mockRandomizeFirstLayer(self):
         """
-         *
-         * *  *
-         *  \/
-         *  /\
-         * *  *
-         * .
-         *
-         * @return Graph of the form above.
+        *  *
+         \/
+         /\
+        *  *
         """
         gb = self.gb
+        layers = create_simpleCross(gb).layers
 
-        leftNodes = gb.addNodesToLayer(2, gb.makeLayer())
-        rightNodes = gb.addNodesToLayer(2, gb.makeLayer())
-        gb.eastWestEdgeFromTo(leftNodes[0], rightNodes[1])
-        gb.eastWestEdgeFromTo(leftNodes[1], rightNodes[0])
-
-        nodes = gb.graph.layers
         portDist = NodeRelativePortDistributor(gb.random, gb.graph)
-        constraintResolver = ForsterConstraintResolver(nodes)
-        portDist.calculatePortRanks_many(nodes[0], PortType.OUTPUT)
+        constraintResolver = ForsterConstraintResolver(layers)
+        portDist.calculatePortRanks_many(layers[0], PortType.OUTPUT)
         crossMin = BarycenterHeuristic(
-            constraintResolver, self.random, portDist, nodes)
+            constraintResolver, self.random, portDist, layers)
 
-        expectedOrder = nodes[0][:]
-        expectedSwitchedOrder = gb.switchOrderInArray(0, 1, nodes[0])
+        expectedOrder = layers[0][:]
+        expectedSwitchedOrder = gb.switchOrderInArray(0, 1, layers[0])
 
-        self.minimizeCrossings(crossMin, nodes[0], False, True, True)
-        self.assertSequenceEqual(expectedOrder, nodes[0])
+        self.minimizeCrossings(crossMin, layers[0], False, True, True)
+        self.assertSequenceEqual(expectedOrder, layers[0])
 
         self.random.setChangeBy(-0.01)
-        self.minimizeCrossings(crossMin, nodes[0], False, True, True)
+        self.minimizeCrossings(crossMin, layers[0], False, True, True)
 
-        self.assertSequenceEqual(nodes[0], expectedSwitchedOrder)
+        self.assertSequenceEqual(layers[0], expectedSwitchedOrder)
 
     def test_fillingInUnknownBarycenters(self):
         """
-         * <pre>
-         *   *  *
-         *    \/
-         *    /\
-         * *-*  *
-         * .
-         * </pre>
-         *
-         * @return Graph of the form above.
+          *  *
+           \/
+           /\
+        *-*  *
         """
         gb = self.gb
-        leftNode = gb.addNodeToLayer(gb.makeLayer())
-        middleNodes = gb.addNodesToLayer(2, gb.makeLayer())
-        rightNodes = gb.addNodesToLayer(2, gb.makeLayer())
-        gb.eastWestEdgeFromTo(middleNodes[0], rightNodes[1])
-        gb.eastWestEdgeFromTo(middleNodes[1], rightNodes[0])
-        gb.eastWestEdgeFromTo(leftNode, middleNodes[1])
-
-        layers = gb.graph.layers
+        layers = create_extendedCross(gb).layers
         expectedSwitchedOrder = gb.switchOrderInArray(0, 1, layers[2])
         expectedOrderSecondLayer = layers[1][:]
 
@@ -121,38 +98,25 @@ class BarycenterHeuristicTC(unittest.TestCase):
               *
         """
         gb = self.gb
-        leftLayer = gb.makeLayer()
-        rightLayer = gb.makeLayer()
-
-        leftNode = gb.addNodeToLayer(leftLayer)
-
-        rightTopNode = gb.addNodeToLayer(rightLayer)
-        rightBottomNode = gb.addNodeToLayer(rightLayer)
-
-        gb.eastWestEdgeFromTo(leftNode, rightBottomNode)
-        gb.eastWestEdgeFromTo(leftNode, rightTopNode)
-
-        gb.setFixedOrderConstraint(leftNode)
-
-        nodes = gb.graph.layers
+        layers = create_dualPortCross_post(gb).layers
 
         portDist = NodeRelativePortDistributor(gb.random, gb.graph)
-        constraintResolver = ForsterConstraintResolver(nodes)
+        constraintResolver = ForsterConstraintResolver(layers)
 
-        portDist.calculatePortRanks_many(nodes[0], PortType.OUTPUT)
+        portDist.calculatePortRanks_many(layers[0], PortType.OUTPUT)
         crossMin = BarycenterHeuristic(
-            constraintResolver, self.random, portDist, nodes)
+            constraintResolver, self.random, portDist, layers)
 
-        expectedOrder = gb.switchOrderInArray(0, 1, nodes[1])
+        expectedOrder = gb.switchOrderInArray(0, 1, layers[1])
 
-        self.minimizeCrossings(crossMin, nodes[1], False, False, True)
-        self.assertSequenceEqual(nodes[1], expectedOrder)
+        self.minimizeCrossings(crossMin, layers[1], False, False, True)
+        self.assertSequenceEqual(layers[1], expectedOrder)
 
         self.random.setChangeBy(-0.1)
         self.random.setNextBoolean(False)
-        self.minimizeCrossings(crossMin, nodes[1], False, False, True)
+        self.minimizeCrossings(crossMin, layers[1], False, False, True)
 
-        self.assertIs(nodes[1], expectedOrder)
+        self.assertIs(layers[1], expectedOrder)
 
     def test_assumingFixedPortOrder_givenSimplePortOrderCross_removesCrossingBackwards(self):
         """
@@ -162,13 +126,7 @@ class BarycenterHeuristicTC(unittest.TestCase):
         *
         """
         gb = self.gb
-        leftNodes = gb.addNodesToLayer(2, gb.makeLayer())
-        rightNode = gb.addNodeToLayer(gb.makeLayer())
-        gb.eastWestEdgeFromTo(leftNodes[0], rightNode)
-        gb.eastWestEdgeFromTo(leftNodes[1], rightNode)
-        gb.setFixedOrderConstraint(rightNode)
-
-        layers = gb.graph.layers
+        layers = create_dualPortCross_pre(gb).layers
 
         portDist = NodeRelativePortDistributor(gb.random, gb.graph)
         constraintResolver = ForsterConstraintResolver(layers)
@@ -215,16 +173,14 @@ class BarycenterHeuristicTC(unittest.TestCase):
 
     def test_northSouthEdges(self):
         """
-         * <pre>
-         *   ----*
-         *   |---*
-         *   ||
-         * *-++--*
-         *   ||
-         *  ----
-         *  |__|
-         * </pre>
-         * @return Graph of the form above.
+          ----*
+          |---*
+          ||
+        *-++--*
+          ||
+         ----
+         |__|
+
         """
         gb = self.gb
         leftNodes = gb.addNodesToLayer(1, gb.makeLayer())
@@ -263,7 +219,7 @@ class BarycenterHeuristicTC(unittest.TestCase):
     def minimizeCrossings(self, crossMin: BarycenterHeuristic, layer: LNodeLayer,
                           preOrdered: bool, randomized: bool, forward: bool):
         """
-         * Helper method that wraps the nodes array in a list and applies the order back to the array.
+        Helper method that wraps the nodes array in a list and applies the order back to the array.
         """
         nodeList = list(layer)
         crossMin.minimizeCrossingsInLayer(
