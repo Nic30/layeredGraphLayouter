@@ -19,7 +19,7 @@ class BinaryIndexedTree():
         self.binarySums = [0 for _ in range(maxNum + 1)]
         self.numsPerIndex = [0 for _ in range(maxNum)]
         self.size = 0
-        self.fill_with_zero = True
+        self.fill_with_zero = False
 
     def extend_size(self, newMaxNum: int):
         toAdd = newMaxNum - self.maxNum
