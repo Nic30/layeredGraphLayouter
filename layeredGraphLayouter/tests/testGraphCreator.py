@@ -943,10 +943,8 @@ class TestGraphCreator():
 
         return self.addEdgeBetweenPorts(leftPort, rightPort)
 
-    @staticmethod
-    def addEdgeBetweenPorts(from_: LPort, to: LPort) -> LEdge:
-        edge = LEdge(None, None)
-        edge.setSrcDst(from_, to)
+    def addEdgeBetweenPorts(self, from_: LPort, to: LPort) -> LEdge:
+        edge = self.graph.add_edge(from_, to)
         return edge
 
     def addPortOnSide(self, node: LNode, portSide: PortSide) -> LPort:
@@ -958,7 +956,7 @@ class TestGraphCreator():
         :return: newly created port
         """
         side = node.getPortSideView(portSide)
-        port = LPort(node, "port%d" % len(side), None, side=portSide)
+        port = LPort(node, None, side=portSide, name="port%d" % len(side))
         side.append(port)
 
         if not node.portConstraints.isSideFixed():

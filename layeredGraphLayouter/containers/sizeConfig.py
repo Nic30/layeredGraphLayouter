@@ -8,5 +8,7 @@ UNIT_PADDING = 5
 
 
 def width_of_str(s):
+    if not s:
+        return 0
     return len(s) * 12
 

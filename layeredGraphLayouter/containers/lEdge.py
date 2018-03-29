@@ -24,15 +24,16 @@ class LEdge():
         self.dstNode = None
         self.reversed = False
         self.isSelfLoop = None
+        self.junctionPoints = None
+        self.edgeThickness = 1.5
+        self.labels = []
+
+    def copyProperties(self, other: "LEdge"):
+        self.edgeThickness = other.edgeThickness
 
     def setSrcDst(self, src: "LPort", dst: "LPort"):
-        self.src = src
-        self.srcNode = src.getNode()
-        self.dst = dst
-        self.dstNode = dst.getNode()
-        src.outgoingEdges.append(self)
-        dst.incomingEdges.append(self)
-        self.isSelfLoop = self.srcNode is self.dstNode
+        self.setSource(src)
+        self.setTarget(dst)
 
     def reverse(self):
         self.src.outgoingEdges.remove(self)
@@ -43,6 +44,18 @@ class LEdge():
 
         self.srcNode, self.dstNode = self.dstNode, self.srcNode
         self.reversed = not self.reversed
+
+    def setTarget(self, dst: "LPort"):
+        self.dst = dst
+        self.dstNode = dst.getNode()
+        dst.incomingEdges.append(self)
+        self.isSelfLoop = self.srcNode is self.dstNode
+
+    def setSource(self, src: "LPort"):
+        self.src = src
+        self.srcNode = src.getNode()
+        src.outgoingEdges.append(self)
+        self.isSelfLoop = self.srcNode is self.dstNode
 
     def __repr__(self):
         if self.reversed:

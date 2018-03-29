@@ -42,8 +42,19 @@ class ToMxGraph():
     def LPort_coordinates(self, lp):
         p = lp.getNode().geometry
         g = lp.geometry
-        x_rel = (g.x - p.x) / p.width
-        y_rel = (g.y - p.y + PORT_HEIGHT / 2) / p.height
+
+        if p.width == 0:
+            #assert g.x - p.x == 0, (g.x, p.x)
+            x_rel = 0
+        else:
+            x_rel = (g.x - p.x) / p.width
+
+        if p.height == 0:
+            #assert g.y - p.y == 0, (g.y, p.y)
+            y_rel = 0
+        else:
+            y_rel = (g.y - p.y + PORT_HEIGHT / 2) / p.height
+
         assert x_rel >= 0.0 and x_rel <= 1.0, x_rel
         assert y_rel >= 0.0 and y_rel <= 1.0, y_rel
         if x_rel >= 0.5:

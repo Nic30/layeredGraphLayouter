@@ -18,12 +18,12 @@ class LPort():
             (when routing this list is empty and children are directly on parent LNode)
     """
 
-    def __init__(self, parent: "LNode", name: str, direction, side):
+    def __init__(self, parent: "LNode", direction, side, name: str=None):
         self.originObj = None
         self.parent = parent
         self.name = name
         self.direction = direction
-        self.geometry = None
+        self.geometry = GeometryRect(0, 0, 0, 0)
         self.outgoingEdges = []
         self.incomingEdges = []
         self.children = []
@@ -57,7 +57,14 @@ class LPort():
             yield from it
 
     def initDim(self, width, x=0, y=0):
-        g = self.geometry = GeometryRect(x, y, width, PORT_HEIGHT)
+        g = self.geometry
+        g.x += x
+        g.y += y
+        g.width = width
+
+        if self.name:
+            g.height = PORT_HEIGHT
+
         return g.y + g.height
 
     def translate(self, x, y):

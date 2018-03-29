@@ -34,7 +34,7 @@ class AllCrossingsCounter():
                             hasHyperEdgesEastOfIndex[l - 1] = True
 
         for edge in graph.edges:
-            if (edge.srcNode.layer is edge.dstNode.layer):
+            if edge.srcNode.layer is edge.dstNode.layer:
                 inLayerEdgeCounts[l] += 1
 
         portPos = {}

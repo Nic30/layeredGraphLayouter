@@ -34,7 +34,7 @@ class LNode():
         self.north = []
         self.south = []
 
-        self.geometry = None
+        self.geometry = GeometryRect(0, 0, 0, 0)
         self.parent = None
 
         # {PortItem: LPort}
@@ -98,17 +98,26 @@ class LNode():
         width = max(port_w, label_w)
         height = UNIT_HEADER_OFFSET + \
             max(len(self.west), len(self.east)) * PORT_HEIGHT
-        self.geometry = GeometryRect(x, y, width, height)
+        g = self.geometry 
+        g.x += x
+        g.y += y
+        g.width = width
+        g.height = height 
 
         if self.south or self.north:
             raise NotImplementedError()
 
         port_width = width / 2
-        _y = y + UNIT_HEADER_OFFSET
+        _y = y
+        if self.name:
+            _y += UNIT_HEADER_OFFSET
+
         for i in self.east:
             _y = i.initDim(port_width, x=x + port_width, y=_y)
 
-        _y = y + UNIT_HEADER_OFFSET
+        _y = y
+        if self.name:
+            _y += UNIT_HEADER_OFFSET
         for o in self.west:
             _y = o.initDim(port_width, x=x, y=_y)
 
@@ -119,7 +128,7 @@ class LNode():
             p.translate(x, y)
 
     def addPort(self, name, direction: PortType, side: PortSide):
-        port = LPort(self, name, direction, side)
+        port = LPort(self, direction, side, name=name)
         self.getPortSideView(side).append(port)
         return port
 

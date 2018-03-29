@@ -9,6 +9,7 @@ from layeredGraphLayouter.tests.crossing.binaryIndexedTree_test import BinaryInd
 from layeredGraphLayouter.tests.crossing.crossingCounter_test import CrossingsCounterTC
 from layeredGraphLayouter.tests.crossing.layerSweepCrossingMinimizer_test import LayerSweepCrossingMinimizerTC
 from layeredGraphLayouter.tests.cycleBreaker_test import CycleBreakerTC
+from layeredGraphLayouter.tests.edgeManipulators.longEdgeSplitter_test import LongEdgeSplitterTC
 from layeredGraphLayouter.tests.layer_test import LayerTC
 
 
@@ -20,6 +21,7 @@ TCS = [
     AbstractBarycenterPortDistributorTC,
     BarycenterHeuristicTC,
     CrossingsCounterTC,
+    LongEdgeSplitterTC,
     LayerSweepCrossingMinimizerTC,
 ]
 
