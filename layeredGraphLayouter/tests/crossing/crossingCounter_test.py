@@ -18,13 +18,7 @@ class CrossingsCounterTC(unittest.TestCase):
         self.gb = InLayerEdgeTestGraphCreator()
 
     def getInitPortOrder(self) -> Dict[LPort, int]:
-        def iterPorts():
-            for layer in self.order():
-                for n in layer:
-                    for p in n.iterPorts():
-                        yield p
-
-        return {p: 0 for p in iterPorts()}
+        return {}
 
     def test_countCrossingsBetweenLayers_fixedPortOrderCrossingOnTwoNodes(self):
         """
