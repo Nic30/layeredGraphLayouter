@@ -19,11 +19,14 @@ class NodeType(Enum):
 
 
 class PortType(Enum):
-    INPUT = 0
-    OUTPUT = 1
+    UNDEFINED = 0
+    INPUT = 1
+    OUTPUT = 2
 
     def toStr(self, v):
-        if v == self.INPUT:
+        if v == self.UNDEFINED:
+            return "UNDEFINED"
+        elif v == self.INPUT:
             return "INPUT"
         elif v == self.OUTPUT:
             return "OUTPUT"
@@ -149,3 +152,39 @@ class HierarchyHandling(Enum):
     INHERIT = 0
     INCLUDE_CHILDREN = 1
     SEPARATE_CHILDREN = 2
+
+
+class LayerConstraint(Enum):
+    """
+    Enumeration of layer constraint types. May be set on nodes to constrain in which layer
+    they may appear.
+
+    :see EdgeAndLayerConstraintEdgeReverser
+    :see LayerConstraintProcessor
+    """
+
+    # no constraint on the layering.
+    NONE = 0
+    # put into the first layer.
+    FIRST = 1
+    # put into a separate first layer; used internally.
+    FIRST_SEPARATE = 2
+    # put into the last layer.
+    LAST = 3
+    # put into a separate last layer; used internally.
+    LAST_SEPARATE = 4
+
+
+class EdgeConstraint(Enum):
+    """
+    Enumeration of edge constraints. Edge constraints can be set on ports to constrain the
+    type of edges incident to that port.
+
+    :see: EdgeAndLayerConstraintEdgeReverser
+    """
+    # no constraint on incident edges.
+    NONE = 0
+    # node may have only incoming edges.
+    INCOMING_ONLY = 1
+    # node may have only outgoing edges.
+    OUTGOING_ONLY = 2
