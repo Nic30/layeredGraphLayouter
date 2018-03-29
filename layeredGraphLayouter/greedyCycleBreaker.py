@@ -80,7 +80,7 @@ class GreedyCycleBreaker():
             for port in node.iterPorts():
                 for edge in port.outgoingEdges:
                     if node.mark > edge.dstNode.mark:
-                        edge.reverse()
+                        edge.reverse(graph, True)
 
     def updateNeighbors(self, node: LNode):
         """
