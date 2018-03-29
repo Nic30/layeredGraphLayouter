@@ -2,7 +2,7 @@ from itertools import chain
 from typing import List, Generator
 
 from layeredGraphLayouter.containers.constants import PortSide, PortType,\
-    NodeType, PortConstraints
+    NodeType, PortConstraints, LayerConstraint
 from layeredGraphLayouter.containers.geometry import GeometryRect
 from layeredGraphLayouter.containers.lPort import LPort
 from layeredGraphLayouter.containers.sizeConfig import UNIT_HEADER_OFFSET,\
@@ -52,6 +52,7 @@ class LNode():
 
         self.layer = None
         self.inLayerSuccessorConstraint = []
+        self.layeringLayerConstraint = LayerConstraint.NONE
         self.portConstraints = PortConstraints.UNDEFINED
         self.inLayerLayoutUnit = self
         self.nestedLgraph = None
@@ -59,6 +60,7 @@ class LNode():
         self.origin = None
         self.extPortSide = None
         self.barycenterAssociates = None
+        self.longEdgeHasLabelDummies = False
 
     def iterPorts(self) -> Generator[LPort, None, None]:
         return chain(self.north, self.east, self.south, self.west)
@@ -200,3 +202,9 @@ class LayoutExternalPort(LNode):
         super(LayoutExternalPort, self).__init__(graph, name)
         self.direction = direction
         self.type = NodeType.EXTERNAL_PORT
+        if direction == PortType.INPUT:
+            self.layeringLayerConstraint = LayerConstraint.FIRST
+        elif direction == PortType.OUTPUT:
+            self.layeringLayerConstraint = LayerConstraint.LAST
+        else:
+            raise ValueError(direction)
