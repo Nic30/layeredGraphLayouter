@@ -48,17 +48,18 @@ class ToMxGraph():
             x_rel = 0
         else:
             x_rel = (g.x - p.x) / p.width
+            assert x_rel >= 0.0 and x_rel <= 1.0, x_rel
 
         if p.height == 0:
             #assert g.y - p.y == 0, (g.y, p.y)
             y_rel = 0
         else:
-            y_rel = (g.y - p.y + PORT_HEIGHT / 2) / p.height
+            y_rel = (g.y - p.y + g.height / 2) / p.height
+            assert y_rel >= 0.0 and y_rel <= 1.0, y_rel
 
-        assert x_rel >= 0.0 and x_rel <= 1.0, x_rel
-        assert y_rel >= 0.0 and y_rel <= 1.0, y_rel
         if x_rel >= 0.5:
             x_rel = 1
+
         return x_rel, y_rel
 
     def getMxGraphId(self, obj):
@@ -75,24 +76,29 @@ class ToMxGraph():
         c.append(self.GeometryRect_toMxGraph(g))
         yield c
 
-        label = mxCell(
-            id=self.getMxGraphId((lu, lu.name)),
-            value=lu.name,
-            style=("text;html=1;resizable=0;points=[];autosize=1;align=left;"
-                   "verticalAlign=top;spacingTop=0;"),
-            vertex="1",
-            parent=_id,
-        )
-        lg = GeometryRect(0, 0, g.width, UNIT_HEADER_OFFSET)
-        label.append(self.GeometryRect_toMxGraph(lg))
-        yield label
+        if lu.name:
+            label = mxCell(
+                id=self.getMxGraphId((lu, lu.name)),
+                value=lu.name,
+                style=("text;html=1;resizable=0;points=[];autosize=1;align=left;"
+                       "verticalAlign=top;spacingTop=0;"),
+                vertex="1",
+                parent=_id,
+            )
+            lg = GeometryRect(0, 0, g.width, UNIT_HEADER_OFFSET)
+            label.append(self.GeometryRect_toMxGraph(lg))
+            yield label
 
         for lp in lu.iterPorts():
             yield from self.LPort_toMxGraph(lp, _id, g)
 
     def LPort_toMxGraph(self, lp: LPort, parentId, parentGeom):
+        name = lp.name
+        if not name:
+            name = ""
+
         p = mxCell(
-            value=lp.name,
+            value=name,
             id=self.getMxGraphId(lp),
             style="rounded=0;whiteSpace=wrap;html=1;",
             parent=parentId, vertex="1")

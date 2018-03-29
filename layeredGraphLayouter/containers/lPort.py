@@ -31,6 +31,7 @@ class LPort():
 
         self.portDummy = None
         self.insideConnections = False
+        self.inputCollect = False
 
     def getDegree(self) -> int:
         """
@@ -39,6 +40,15 @@ class LPort():
         @return the number of edges connected to this port.
         """
         return len(self.incomingEdges) + len(self.outgoingEdges)
+
+    def getNetFlow(self) -> int:
+        """
+        Returns the number of incoming edges minus the number of outgoing edges. This
+        is the net flow of the port.
+
+        :return: the port's net flow.
+        """
+        return len(self.incomingEdges) - len(self.outgoingEdges)
 
     def getNode(self):
         p = self
@@ -89,6 +99,10 @@ class LPort():
     def getSuccessorPorts(self):
         for e in self.outgoingEdges:
             yield e.dst
+
+    def getConnectedPorts(self):
+        yield from self.getPredecessorPorts()
+        yield from self.getSuccessorPorts()
 
     def __repr__(self):
         return "<%s %s>" % (

@@ -52,7 +52,7 @@ class AbstractBarycenterPortDistributor():
                     r[p] = 0
 
         self.portBarycenter = defaultdict(int)
-        self.inLayerPorts = {}
+        self.inLayerPorts = []
 
     # ######################################/
     # Port Rank Assignment
@@ -176,7 +176,7 @@ class AbstractBarycenterPortDistributor():
                 # add up all ranks of connected ports
                 for outgoingEdge in port.outgoingEdges:
                     if outgoingEdge.dstNode.layer is node.layer:
-                        inLayerPorts.add(port)
+                        inLayerPorts.append(port)
                         continueOnPortIteration = True
                         break
                     else:
@@ -191,7 +191,7 @@ class AbstractBarycenterPortDistributor():
 
                 for incomingEdge in port.incomingEdges:
                     if incomingEdge.srcNode.layer is node.layer:
-                        inLayerPorts.add(port)
+                        inLayerPorts.append(port)
                         continueOnPortIteration = True
                         break
                     else:
@@ -218,7 +218,7 @@ class AbstractBarycenterPortDistributor():
         # values
         nodePositions = self.nodePositions
         nodeIndexInLayer = nodePositions[node] + 1
-        layerSize = len(node.getLayer()) + 1
+        layerSize = len(node.layer) + 1
         minBarycenter = self.minBarycenter
         maxBarycenter = self.maxBarycenter
         portBarycenter = self.portBarycenter
@@ -229,7 +229,7 @@ class AbstractBarycenterPortDistributor():
             inLayerConnections = 0
 
             for connectedPort in inLayerPort.getConnectedPorts():
-                if connectedPort.getNode().getLayer() == node.getLayer():
+                if connectedPort.getNode().layer is node.layer:
                     sum_ += nodePositions[connectedPort.getNode()] + 1
                     inLayerConnections += 1
 
