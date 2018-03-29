@@ -3,6 +3,9 @@ from typing import Optional
 
 from layeredGraphLayouter.containers.constants import PortType
 from layeredGraphLayouter.containers.lNode import LNode
+from layeredGraphLayouter.containers.lGraph import LGraph
+from layeredGraphLayouter.layoutProcessorConfiguration import LayoutProcessorConfiguration
+from layeredGraphLayouter.edgeManipulators.edgeAndLayerConstraintEdgeReverser import EdgeAndLayerConstraintEdgeReverser
 
 
 LAYERING_MIN_WIDTH_UPPER_BOUND_ON_WIDTH = 10
@@ -15,7 +18,68 @@ COMPENSATOR_RANGE = (1, 2)
 class MinWidthLayerer():
     """
     :note: ported from ELK
+
+    Implementation of the heuristic MinWidth for solving the NP-hard minimum-width layering problem
+    with consideration of dummy nodes. MinWidth is based on the longest-path algorithm, which finds
+    layerings with the minimum height, but doesn't consider the width of the graph. MinWidth also
+    considers an upper bound on the width of a given graph. The upper bound isn't a "bound" in a
+    strict sense, as some layers might exceed its limit, if certain conditions are met.
+
+    Details are described in
+
+    Nikola S. Nikolov, Alexandre Tarassov, and Jürgen Branke. 2005. In search for efficient
+    heuristics for minimum-width graph layering with consideration of dummy nodes. J. Exp.
+    Algorithmics 10, Article 2.7 (December 2005). DOI=10.1145/1064546.1180618
+    http://doi.acm.org/10.1145/1064546.1180618.
+
+    MinWidth takes two additional parameters, which can be configured as a property:
+
+    Upper Bound On Width {@link LayeredOptions#UPPER_BOUND_ON_WIDTH} – Defines a loose upper bound on
+    the width of the MinWidth layerer. Defaults to -1 (special value for using both 1, 2, 3 and 4 as
+    values and choosing the narrowest layering afterwards), lower bound is 1.
+    Upper Layer Estimation Scaling Factor
+    {@link LayeredOptions#UPPER_LAYER_ESTIMATION_SCALING_FACTOR} – Multiplied with
+    {@link LayeredOptions#UPPER_BOUND_ON_WIDTH} for defining an upper bound on the width of layers which
+    haven't been placed yet, but whose maximum width had been (roughly) estimated by the MinWidth
+    algorithm. Compensates for too high estimations. Defaults to -1 (special value for using both 1
+    and 2 as values and choosing the narrowest layering afterwards), lower bound is 1.
+
+    This version of the algorithm, however, differs from the one described in the paper as it
+    considers the actual size of the nodes of the graph in order to handle real world use cases of
+    graphs a little bit better. The approach is based on Marc Adolf's version in his implementation
+    of the heuristic {@link StretchWidthLayerer}. Some changes include:
+
+    estimating the sizes of dummy nodes by taking the edge spacing of the {@link LGraph} into
+    account,
+    finding the narrowest real node of the graph and normalizing all the widths of the nodes of
+    the graph (real and dummy) in relation to this node,
+    computing the average size of all real nodes (we don't know the number of dummy nodes in
+    advance),
+    using this average as a factor for the ubw-value given by the user in order to adjust the
+    boundary to our new approach (using the result of this multiplication instead of the given value
+    of ubw thus changes the condition to start a new layer from the paper slightly).
+
+    Precondition:
+        the graph has no cycles, but might contain self-loops
+    Postcondition:
+        all nodes have been assigned a layer such that edges connect only nodes from layers with
+    increasing indices
+
+    Recommended values for the algorithm suggested bei Nikolov et al. after a parameter study,
+    see:
+
+    Alexandre Tarassov, Nikola S. Nikolov, and Jürgen Branke. 2004. A Heuristic for
+    Minimum-Width Graph Layering with Consideration of Dummy Nodes. Experimental and Efficient
+    Algorithms, Third International Workshop, WEA 2004, Lecture Notes in Computer Science 3059.
+    Springer-Verlag, New York, 570-583. DOI=10.1007/978-3-540-24838-5_42
+    http://dx.doi.org/10.1007/978-3-540-24838-5_42.
     """
+
+    @staticmethod
+    def getLayoutProcessorConfiguration(graph: LGraph) -> LayoutProcessorConfiguration:
+        return LayoutProcessorConfiguration(
+            p1_cycle_breaking_before=[EdgeAndLayerConstraintEdgeReverser],
+            p3_node_ordering_before=[LayerConstraintProcessor])
 
     def precalculateConstants(self, notInserted):
         # Compute the minimum nodes size (of the real nodes). We're going to use this value in the
