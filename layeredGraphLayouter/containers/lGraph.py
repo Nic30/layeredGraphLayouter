@@ -8,10 +8,10 @@ from layeredGraphLayouter.containers.lPort import LPort
 
 
 class LNodeLayer(list):
-    def __init__(self, graph: "LGraph" = None):
+    def __init__(self, graph: "LGraph" = None, registerOnGraph=True):
         self.graph = graph
-        self.inGraphIndex = len(graph.layers)
-        self.graph.layers.append(self)
+        if registerOnGraph:
+            self.graph.layers.append(self)
 
     def append(self, v):
         v.layer = self
@@ -61,6 +61,7 @@ class LGraph():
         # The graph's nodes are partitioned.
         self.p_partitions = False
         self.hierarchyHandling = HierarchyHandling.INCLUDE_CHILDREN
+        self.unnecessaryBendpoints = False
 
     def getLayerlessNodes(self):
         """
@@ -84,7 +85,6 @@ class LGraph():
 
     def append_layer(self, nodes):
         layer = LNodeLayer(self)
-        layer.extend(nodes)
         for n in nodes:
             n.setLayer(layer)
         return layer

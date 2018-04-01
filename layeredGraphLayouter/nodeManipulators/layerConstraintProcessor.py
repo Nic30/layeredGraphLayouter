@@ -1,10 +1,12 @@
+from layeredGraphLayouter.containers.constants import LayerConstraint, NodeType,\
+    UnsupportedConfigurationException
+from layeredGraphLayouter.containers.lEdge import LEdge
 from layeredGraphLayouter.containers.lGraph import LGraph, LNodeLayer
 from layeredGraphLayouter.containers.lNode import LNode
-from layeredGraphLayouter.containers.constants import LayerConstraint, NodeType
-from layeredGraphLayouter.containers.lEdge import LEdge
+from layeredGraphLayouter.iLayoutProcessor import ILayoutProcessor
 
 
-class LayerConstraintProcessor():
+class LayerConstraintProcessor(ILayoutProcessor):
     """
     Moves nodes with layer constraints to the appropriate layers. To meet the preconditions of
     this processor, the {@link EdgeAndLayerConstraintEdgeReverser can be used.
@@ -34,13 +36,13 @@ class LayerConstraintProcessor():
         lastLayer = layers[-1]
 
         # Create the new first and last layers, in case they will be needed
-        veryFirstLayer = LNodeLayer(layeredGraph)
-        veryLastLayer = LNodeLayer(layeredGraph)
+        veryFirstLayer = LNodeLayer(layeredGraph, registerOnGraph=False)
+        veryLastLayer = LNodeLayer(layeredGraph, registerOnGraph=False)
 
         # We may also need label dummy layers between the very first / last
         # layers and the first / last layers
-        firstLabelLayer = LNodeLayer(layeredGraph)
-        lastLabelLayer = LNodeLayer(layeredGraph)
+        firstLabelLayer = LNodeLayer(layeredGraph, registerOnGraph=False)
+        lastLabelLayer = LNodeLayer(layeredGraph, registerOnGraph=False)
 
         # Iterate through the current list of layers
         for layer in layers:
@@ -75,7 +77,7 @@ class LayerConstraintProcessor():
         #      (In this case, we obviously can't move the nodes.)
         # - if any of the first layer's nodes has no layer constraint set
         #      (In this case, we are not allowed to move the node by definition.)
-        if len(layers.size()) >= 2:
+        if len(layers) >= 2:
             moveAllowed = True
             sndFirstLayer = layers[1]
             for node in firstLayer:
@@ -83,7 +85,7 @@ class LayerConstraintProcessor():
                     moveAllowed = False
                     break
 
-                for edge in node.outgoingEdges:
+                for edge in node.getOutgoingEdges():
                     if edge.dstNode.layer is sndFirstLayer:
                         moveAllowed = False
                         break
@@ -110,7 +112,7 @@ class LayerConstraintProcessor():
                     moveAllowed = False
                     break
 
-                for edge in node.incomingEdges:
+                for edge in node.getIncomingEdges():
                     if edge.srcNode.layer is sndLastLayer:
                         moveAllowed = False
                         break
@@ -158,11 +160,15 @@ class LayerConstraintProcessor():
          *            the layer to move the label dummies to.
         """
         if incoming:
-            edges = node.incomingEdges
+            def edges():
+                for n in node.west:
+                    yield from n.incomingEdges
         else:
-            edges = node.outgoingEdges
+            def edges():
+                for n in node.east:
+                    yield from n.outgoingEdges
 
-        for edge in edges:
+        for edge in edges():
             if incoming:
                 possibleLableDummy = edge.srcNode
             else:
@@ -184,7 +190,7 @@ class LayerConstraintProcessor():
     """
 
     def throwUpUnlessNoIncomingEdges(self, node: LNode, allowFromFirstSeparate: bool):
-        for port in node.iterPorts():
+        for port in node.west:
             for incoming in port.incomingEdges:
                 if not self.isAcceptableIncomingEdge(incoming):
                     if (allowFromFirstSeparate):
@@ -208,7 +214,7 @@ class LayerConstraintProcessor():
             return True
 
         # Otherwise, the target node is expected to be in the FIRST layer
-        assert targetNode.layeringLayerConstraint == LayerConstraint.FIRST
+        assert targetNode.layeringLayerConstraint == LayerConstraint.FIRST, (targetNode, targetNode.layeringLayerConstraint )
 
         # If the source node is in the very first layer, that's okay
         if (sourceNode.layeringLayerConstraint == LayerConstraint.FIRST_SEPARATE):
@@ -228,17 +234,17 @@ class LayerConstraintProcessor():
          * @param allowToLastSeparate
          *            {@code True if outgoing connections to {@code LAST_SEPARATE nodes are allowed.
         """
-        for port in node.iterPorts():
+        for port in node.west:
             for outgoing in port.outgoingEdges:
                 if not self.isAcceptableOutgoingEdge(outgoing):
                     if (allowToLastSeparate):
-                        raise NotImplementedError("Node '" + node.getDesignation()
-                                                  + "' has its layer constraint set to LAST, but has at least one outgoing edge that "
-                                                  + " does not go to a LAST_SEPARATE node. That must not happen.")
+                        raise UnsupportedConfigurationException(
+                            "Node '%r' (%r) has its layer constraint set to LAST, but has at least one outgoing edge that "
+                            " does not go to a LAST_SEPARATE node. That must not happen." % (node, outgoing))
                     else:
-                        raise NotImplementedError("Node '" + node.getDesignation()
-                                                  + "' has its layer constraint set to LAST_SEPARATE, but has at least one outgoing "
-                                                  + "edge. LAST_SEPARATE nodes must not have outgoing edges.")
+                        raise UnsupportedConfigurationException(
+                            "Node '%r' (%r) has its layer constraint set to LAST_SEPARATE, but has at least one outgoing "
+                            "edge. LAST_SEPARATE nodes must not have outgoing edges." % (node, outgoing))
 
     def isAcceptableOutgoingEdge(self, edge: LEdge) -> bool:
         """
@@ -252,7 +258,7 @@ class LayerConstraintProcessor():
             return True
 
         # Otherwise, the source node is expected to be in the LAST layer
-        assert sourceNode.layeringLayerConstraint == LayerConstraint.LAST
+        assert sourceNode.layeringLayerConstraint == LayerConstraint.LAST, (sourceNode, sourceNode.layeringLayerConstraint)
         # If the target node is in the very last layer, that's okay
         if (targetNode.layeringLayerConstraint == LayerConstraint.LAST_SEPARATE):
             return True

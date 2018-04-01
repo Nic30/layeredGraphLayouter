@@ -1,8 +1,9 @@
 from typing import List
 
-from layeredGraphLayouter.containers.constants import NodeType
+from layeredGraphLayouter.containers.constants import NodeType, PortSide
 from layeredGraphLayouter.containers.lGraph import LNodeLayer
 from layeredGraphLayouter.crossing.graphInfoHolder import GraphInfoHolder
+from layeredGraphLayouter.containers.lNode import LNode
 
 
 class SweepCopy():
@@ -50,7 +51,7 @@ class SweepCopy():
         # iterate the layers
         for i, layer in enumerate(g.lGraph.layers):
             northSouthPortDummies.clear()
-            templateLayer = self.nodeOrder[i] 
+            templateLayer = self.nodeOrder[i]
             # iterate and order the nodes within the layer
             for j, _ in enumerate(layer):
                 node = templateLayer[j]
@@ -59,17 +60,17 @@ class SweepCopy():
                     northSouthPortDummies.append(node)
 
                 layer[j] = node
-                node.setLayer(layer)
+                assert node.layer is layer
 
                 # order ports as computed
                 # node.getPorts().clear()
                 # node.getPorts().extend(portOrders.get(i).get(j))
 
         # assert that the port side is set properly
-        # for dummy in northSouthPortDummies:
-        #    origin = self.assertCorrectPortSides(dummy)
-        #    updatePortOrder.add(origin)
-        #    updatePortOrder.add(dummy)
+        for dummy in northSouthPortDummies:
+            origin = self.assertCorrectPortSides(dummy)
+            #updatePortOrder.add(origin)
+            #updatePortOrder.add(dummy)
         #
         # since the side of certain ports may have changed at this point,
         # the list of ports must be re-sorted (see PortListSorter)
@@ -78,27 +79,31 @@ class SweepCopy():
         #    Collections.sort(node.getPorts(), PortListSorter.DEFAULT_SORT_COMPARATOR)
         #    node.cachePortSides()
 
-    # def assertCorrectPortSides(self, dummy: LNode) -> LNode:
-    #    """
-    #    Corrects the {@link PortSide} of dummy's origin.
-    #
-    #    :return: The {@link LNode} ('origin') whose port {@code dummy} represents.
-    #    """
-    #    assert dummy.getType() == NodeType.NORTH_SOUTH_PORT
-    #
-    #    origin = dummy.in_layer_layout_unit
-    #
-    #    # a north south port dummy has exactly one port
-    #    dummyPorts = dummy.getPorts()
-    #    dummyPort = dummyPorts[0]
-    #
-    #    # find the corresponding port on the regular node
-    #    for port in origin.iterPorts():
-    #        if (port.equals(dummyPort.getProperty(InternalProperties.ORIGIN))):
-    #            # switch the port's side if necessary
-    #            if ((port.getSide() == PortSide.NORTH) and (dummy.id > origin.id)):
-    #                port.setSide(PortSide.SOUTH)
-    #            elif ((port.getSide() == PortSide.SOUTH) and (origin.id > dummy.id)):
-    #                port.setSide(PortSide.NORTH)
-    #            break
-    #    return origin
+    def assertCorrectPortSides(self, dummy: LNode) -> LNode:
+        """
+        Corrects the {@link PortSide} of dummy's origin.
+
+        :return: The {@link LNode} ('origin') whose port {@code dummy} represents.
+        """
+        assert dummy.getType() == NodeType.NORTH_SOUTH_PORT
+
+        origin = dummy.in_layer_layout_unit
+
+        # a north south port dummy has exactly one port
+        dummyPorts = dummy.getPorts()
+        dummyPort = dummyPorts[0]
+
+        # find the corresponding port on the regular node
+        for port in origin.iterPorts():
+            if port is dummyPort.origin:
+                # switch the port's side if necessary
+                if ((port.side == PortSide.NORTH) and (dummy.id > origin.id)):
+                    origin.nort.remove(port)
+                    port.side = PortSide.SOUTH
+                    origin.south.append(port)
+                elif ((port.side == PortSide.SOUTH) and (origin.id > dummy.id)):
+                    origin.south.remove(port)
+                    port.side = PortSide.NORTH
+                    origin.north.append(port)
+                break
+        return origin

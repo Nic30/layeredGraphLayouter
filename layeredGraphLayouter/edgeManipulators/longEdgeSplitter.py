@@ -6,9 +6,10 @@ from layeredGraphLayouter.containers.lEdge import LEdge
 from layeredGraphLayouter.containers.lGraph import LGraph, LNodeLayer
 from layeredGraphLayouter.containers.lNode import LNode
 from layeredGraphLayouter.containers.lPort import LPort
+from layeredGraphLayouter.iLayoutProcessor import ILayoutProcessor
 
 
-class LongEdgeSplitter():
+class LongEdgeSplitter(ILayoutProcessor):
     """
     Splits the long edges of the layered graph to obtain a proper layering. For each edge that
     connects two nodes that are more than one layer apart from each other, create a dummy node to
@@ -76,7 +77,6 @@ class LongEdgeSplitter():
         dummyNode.origin = edgeToSplit
         dummyNode.portConstraints = PortConstraints.FIXED_POS
         dummyNode.setLayer(targetLayer)
-        targetLayer.append(dummyNode)
 
         return dummyNode
 
@@ -181,4 +181,4 @@ class LongEdgeSplitter():
                 newEdge.getLabels().add(label)
 
         for label in toRemove:
-            labels.remove(label) 
+            labels.remove(label)

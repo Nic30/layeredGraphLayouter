@@ -2,7 +2,7 @@ from itertools import chain
 from typing import List, Generator
 
 from layeredGraphLayouter.containers.constants import PortSide, PortType,\
-    NodeType, PortConstraints, LayerConstraint
+    NodeType, PortConstraints, LayerConstraint, InLayerConstraint
 from layeredGraphLayouter.containers.geometry import GeometryRect
 from layeredGraphLayouter.containers.lPort import LPort
 from layeredGraphLayouter.containers.sizeConfig import UNIT_HEADER_OFFSET,\
@@ -52,6 +52,7 @@ class LNode():
 
         self.layer = None
         self.inLayerSuccessorConstraint = []
+        self.inLayerConstraint = InLayerConstraint.NONE
         self.layeringLayerConstraint = LayerConstraint.NONE
         self.portConstraints = PortConstraints.UNDEFINED
         self.inLayerLayoutUnit = self
@@ -190,8 +191,17 @@ class LNode():
         for port in self.iterPorts():
             yield from port.outgoingEdges
 
+    def getIncomingEdges(self):
+        for port in self.iterPorts():
+            yield from port.incomingEdges
+
     def setLayer(self, layer):
+        if self.layer is layer:
+            return
+        if self.layer:
+            self.layer.remove(self)
         self.layer = layer
+        self.layer.append(self)
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self.name)

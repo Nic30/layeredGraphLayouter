@@ -871,7 +871,10 @@ class TestGraphCreator():
                           nodeWithEastWestPortsIsOrigin: bool):
         addPortOnSide = self.addPortOnSide
         addEdgeBetweenPorts = self.addEdgeBetweenPorts
-        normalNodeEastOfNsPortNode = nodeWithEastWestPorts.layer.inGraphIndex < nodeWithNSPorts.layer.inGraphIndex
+        layers = nodeWithEastWestPorts.graph.layers
+        i0 = layers.index(nodeWithEastWestPorts.layer)
+        i1 = layers.index(nodeWithNSPorts.layer)
+        normalNodeEastOfNsPortNode = i0 < i1
         direction = PortSide.WEST if normalNodeEastOfNsPortNode else PortSide.EAST
 
         targetNodePortSide = PortSide.opposite(direction)
@@ -925,7 +928,6 @@ class TestGraphCreator():
         node.type = NodeType.NORMAL
         node.inLayerLayoutUnit = node
         node.setLayer(layer)
-        layer.append(node)
         layer.graph.nodes.append(node)
         return node
 
