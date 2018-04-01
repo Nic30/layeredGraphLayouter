@@ -188,3 +188,25 @@ class EdgeConstraint(Enum):
     INCOMING_ONLY = 1
     # node may have only outgoing edges.
     OUTGOING_ONLY = 2
+
+
+class InLayerConstraint(Enum):
+    """
+    Enumeration of in-layer constraint types. In-layer constraints divide a layer into three
+    parts: the normal part, a top part and a bottom part. This constraint can be set on nodes
+    to define in which part they may appear.
+
+    :see: InLayerConstraintProcessor
+    """
+    # no constraint on in-layer placement.
+    NONE = 0
+    # float node to the top of the layer, along with other nodes posessing
+    # this constraint.
+    TOP = 1
+    # float node to the bottom of the layer, along with other nodes posessing
+    # this constraint.
+    BOTTOM = 2
+
+
+class UnsupportedConfigurationException(Exception):
+    pass
