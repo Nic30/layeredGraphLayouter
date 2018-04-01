@@ -208,5 +208,23 @@ class InLayerConstraint(Enum):
     BOTTOM = 2
 
 
+class FixedAlignment(Enum):
+    """
+    Layout option for the choice of candidates in the Brandes & Köpf node placement.
+    """
+    # Chooses the smallest layout from the four possible candidates.
+    NONE = 0
+    # Chooses the left-up candidate from the four possible candidates.
+    LEFTUP = 1
+    # Chooses the right-up candidate from the four possible candidates.
+    RIGHTUP = 2
+    # Chooses the left-down candidate from the four possible candidates.
+    LEFTDOWN = 3
+    # Chooses the right-down candidate from the four possible candidates.
+    RIGHTDOWN = 4
+    # Creates a balanced layout from the four possible candidates.
+    BALANCED = 5
+
+
 class UnsupportedConfigurationException(Exception):
     pass

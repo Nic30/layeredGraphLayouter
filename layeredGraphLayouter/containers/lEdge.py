@@ -28,6 +28,7 @@ class LEdge():
         self.isSelfLoop = None
         self.junctionPoints = None
         self.edgeThickness = 1.5
+        self.priorityStraightness = 1
         self.labels = []
         self.bendPoints = []
 
@@ -101,6 +102,9 @@ class LEdge():
             self.dstNode = dst.getNode()
             dst.incomingEdges.append(self)
             self.isSelfLoop = self.srcNode is self.dstNode
+
+    def isInLayerEdge(self):
+        return self.srcNode.layer is self.dstNode.layer
 
     def setTargetAndInsertAtIndex(self, targetPort: "LPort", index: int):
         """

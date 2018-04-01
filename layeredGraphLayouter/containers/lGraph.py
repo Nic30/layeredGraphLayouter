@@ -1,7 +1,7 @@
 from random import Random
 
 from layeredGraphLayouter.containers.constants import PortConstraints,\
-    HierarchyHandling
+    HierarchyHandling, FixedAlignment
 from layeredGraphLayouter.containers.lEdge import LEdge
 from layeredGraphLayouter.containers.lNode import LNode
 from layeredGraphLayouter.containers.lPort import LPort
@@ -20,6 +20,17 @@ class LNodeLayer(list):
     def extend(self, iterable):
         for v in iterable:
             self.append(v)
+
+    def __eq__(self, other):
+        return self is other
+
+    def __hash__(self):
+        return id(self)
+
+
+class LGraphSpacings():
+    def __init__(self):
+        raise NotImplementedError()
 
 
 class LGraph():
@@ -62,6 +73,9 @@ class LGraph():
         self.p_partitions = False
         self.hierarchyHandling = HierarchyHandling.INCLUDE_CHILDREN
         self.unnecessaryBendpoints = False
+        self.nodePlacementBkFixedAlignment = FixedAlignment.NONE
+        self.nodePlacementFavorStraightEdges = True
+        self.spacings = LGraphSpacings()
 
     def getLayerlessNodes(self):
         """
