@@ -1,7 +1,7 @@
 from collections import deque
 from math import inf
 from random import Random
-from typing import List
+from typing import List, Optional
 
 from layeredGraphLayouter.containers.constants import PortSide, PortConstraints,\
     NodeType, HierarchyHandling
@@ -11,9 +11,14 @@ from layeredGraphLayouter.crossing.allCrossingsCounter import AllCrossingsCounte
 from layeredGraphLayouter.crossing.barycenterHeuristic import BarycenterHeuristic
 from layeredGraphLayouter.crossing.dummyPortDistributor import DummyPortDistributor
 from layeredGraphLayouter.crossing.forsterConstraintResolver import ForsterConstraintResolver
+from layeredGraphLayouter.crossing.graphInfoHolder import GraphInfoHolder
 from layeredGraphLayouter.crossing.nodeRelativePortDistributor import NodeRelativePortDistributor
 from layeredGraphLayouter.crossing.sweepCopy import SweepCopy
-from layeredGraphLayouter.crossing.graphInfoHolder import GraphInfoHolder
+from layeredGraphLayouter.iLayoutProcessor import ILayoutProcessor
+from layeredGraphLayouter.layoutProcessorConfiguration import LayoutProcessorConfiguration
+from layeredGraphLayouter.edgeManipulators.longEdgeSplitter import LongEdgeSplitter
+from layeredGraphLayouter.nodeManipulators.inLayerConstraintProcessor import InLayerConstraintProcessor
+from layeredGraphLayouter.edgeManipulators.longEdgeJoiner import LongEdgeJoiner
 
 
 def firstFree(isForwardSweep, length):
@@ -39,19 +44,19 @@ def sideOpposedSweepDirection(isForwardSweep):
     return PortSide.WEST if isForwardSweep else PortSide.EAST
 
 
-def isNotEnd(length, freeLayerIndex, isForwardSweep):
-    return freeLayerIndex < length if isForwardSweep else freeLayerIndex >= 0
-
-
-def next_step(isForwardSweep: bool):
-    return 1 if isForwardSweep else -1
+def iterLayerIndexes(layers_cnt, isForwardSweep):
+    i = firstFree(isForwardSweep, layers_cnt)
+    if isForwardSweep:
+        return range(layers_cnt)
+    else:
+        return range(layers_cnt - 1, -1, -1)
 
 
 def isExternalPortDummy(firstNode: LNode) -> bool:
     return firstNode.type == NodeType.EXTERNAL_PORT
 
 
-class LayerSweepCrossingMinimizer():
+class LayerSweepCrossingMinimizer(ILayoutProcessor):
     """
     This class minimizes crossings by sweeping through a graph,
     holding the order of nodes in one layer fixed and switching the nodes
@@ -97,6 +102,16 @@ class LayerSweepCrossingMinimizer():
     def __init__(self):
         self.randomSeed = 0
         self.random = Random(self.randomSeed)
+
+    @staticmethod
+    def getLayoutProcessorConfiguration(graph: LGraph)->Optional[LayoutProcessorConfiguration]:
+        return LayoutProcessorConfiguration(
+            p3_node_ordering_before=[LongEdgeSplitter(),
+                                     # PortListSorter()
+                                     ],
+            p4_node_placement_before=[InLayerConstraintProcessor()],
+            p5_edge_routing_after=[LongEdgeJoiner()],
+        )
 
     def process(self, graph: LGraph):
         """
@@ -262,7 +277,7 @@ class LayerSweepCrossingMinimizer():
 
         j = firstIndex(onRightMostLayer, len(lastLayer))
         ports = parent.getPortSideView(sideForStep(onRightMostLayer))
-        step = next_step(onRightMostLayer)
+        step = 1 if onRightMostLayer else -1
         for i in range(len(ports)):
             port = ports[i]
             if port.insideConnections:
@@ -302,23 +317,17 @@ class LayerSweepCrossingMinimizer():
         sweepInHierarchicalNodes = self.sweepInHierarchicalNodes
 
         length = len(layers)
-
+        index0 = firstIndex(forward, length)
         improved = graph.portDistributor.distributePortsWhileSweeping(
-            layers,
-            firstIndex(forward, length),
-            forward)
-        firstLayer = layers[firstIndex(forward, length)]
+            layers, index0, forward)
+        firstLayer = layers[index0]
         improved |= sweepInHierarchicalNodes(firstLayer, forward, firstSweep)
-        i = firstFree(forward, length)
 
-        step = next_step(forward)
-        while isNotEnd(length, i, forward):
-            improved |= minimizeCrossings(
-                layers, i, forward, firstSweep)
+        for i in iterLayerIndexes(length, forward):
+            improved |= minimizeCrossings(layers, i, forward, firstSweep)
             improved |= distributePortsWhileSweeping(layers, i, forward)
             improved |= sweepInHierarchicalNodes(
                 layers[i], forward, firstSweep)
-            i += step
 
         self.graphsWhoseNodeOrderChanged.add(graph)
         return improved

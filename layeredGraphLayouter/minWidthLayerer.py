@@ -6,6 +6,8 @@ from layeredGraphLayouter.containers.lNode import LNode
 from layeredGraphLayouter.containers.lGraph import LGraph
 from layeredGraphLayouter.layoutProcessorConfiguration import LayoutProcessorConfiguration
 from layeredGraphLayouter.edgeManipulators.edgeAndLayerConstraintEdgeReverser import EdgeAndLayerConstraintEdgeReverser
+from layeredGraphLayouter.nodeManipulators.layerConstraintProcessor import LayerConstraintProcessor
+from layeredGraphLayouter.iLayoutProcessor import ILayoutProcessor
 
 
 LAYERING_MIN_WIDTH_UPPER_BOUND_ON_WIDTH = 10
@@ -15,7 +17,7 @@ UPPERBOUND_ON_WIDTH_RANGE = (1, 4)
 COMPENSATOR_RANGE = (1, 2)
 
 
-class MinWidthLayerer():
+class MinWidthLayerer(ILayoutProcessor):
     """
     :note: ported from ELK
 
@@ -78,8 +80,8 @@ class MinWidthLayerer():
     @staticmethod
     def getLayoutProcessorConfiguration(graph: LGraph) -> LayoutProcessorConfiguration:
         return LayoutProcessorConfiguration(
-            p1_cycle_breaking_before=[EdgeAndLayerConstraintEdgeReverser],
-            p3_node_ordering_before=[LayerConstraintProcessor])
+            p1_cycle_breaking_before=[EdgeAndLayerConstraintEdgeReverser()],
+            p3_node_ordering_before=[LayerConstraintProcessor()])
 
     def precalculateConstants(self, notInserted):
         # Compute the minimum nodes size (of the real nodes). We're going to use this value in the
@@ -110,7 +112,7 @@ class MinWidthLayerer():
         # actual mean.
         self.avgSize = avgSize / len(notInserted)
 
-    def process(self, graph):
+    def process(self, graph: LGraph):
         notInserted = graph.getLayerlessNodes()
 
         # The algorithm requires DAG G = (V, E). In this version self-loops are allowed (as we're

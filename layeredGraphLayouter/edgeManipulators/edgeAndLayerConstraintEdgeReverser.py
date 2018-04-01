@@ -1,11 +1,12 @@
-from layeredGraphLayouter.containers.lGraph import LGraph
-from layeredGraphLayouter.containers.lNode import LNode
-from layeredGraphLayouter.containers.lEdge import LEdge
 from layeredGraphLayouter.containers.constants import NodeType, LayerConstraint,\
     EdgeConstraint, PortType, PortSide
+from layeredGraphLayouter.containers.lEdge import LEdge
+from layeredGraphLayouter.containers.lGraph import LGraph
+from layeredGraphLayouter.containers.lNode import LNode
+from layeredGraphLayouter.iLayoutProcessor import ILayoutProcessor
 
 
-class EdgeAndLayerConstraintEdgeReverser():
+class EdgeAndLayerConstraintEdgeReverser(ILayoutProcessor):
     """
     Makes sure nodes with edge  layer constraints have only incoming  only outgoing edges,
     as appropriate. This is done even befe cycle breaking because the result may

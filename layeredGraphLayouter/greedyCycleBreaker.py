@@ -1,11 +1,35 @@
+from layeredGraphLayouter.containers.lGraph import LGraph
 from layeredGraphLayouter.containers.lNode import LNode
+from layeredGraphLayouter.edgeManipulators.reversedEdgeRestorer import ReversedEdgeRestorer
+from layeredGraphLayouter.layoutProcessorConfiguration import LayoutProcessorConfiguration
 from layeredGraphLayouter.uniqList import UniqList
+from layeredGraphLayouter.iLayoutProcessor import ILayoutProcessor
 
 
-class GreedyCycleBreaker():
+class GreedyCycleBreaker(ILayoutProcessor):
     """
     :note: ported from ELK
+
+    Cycle breaker implementation that uses a greedy algorithm. Inspired by
+      Peter Eades, Xuemin Lin, W. F. Smyth,
+        A fast and effective heuristic for the feedback arc set problem.
+        Information Processing Letters 47(6), pp. 319-323, 1993.
+      Giuseppe di Battista, Peter Eades, Roberto Tamassia, Ioannis G. Tollis,
+        Graph Drawing: Algorithms for the Visualization of Graphs,
+        Prentice Hall, New Jersey, 1999 (Section 9.4).
+
+    This cycle breaker doesn't support layer constraints out of the box. If layer
+    constraints should be observed,
+    EdgeAndLayerConstraintEdgeReverser and LayerConstraintProcessor should be used.
+
+    Precondition:none
+    Postcondition:the graph has no cycles, but possibly
+        new nodes and edges
     """
+    @staticmethod
+    def getLayoutProcessorConfiguration(graph: LGraph) -> LayoutProcessorConfiguration:
+        return LayoutProcessorConfiguration(
+            p5_edge_routing_after=[ReversedEdgeRestorer()])
 
     def initDegrees(self):
         add_unresolved = self.unresolved.add
@@ -20,7 +44,7 @@ class GreedyCycleBreaker():
             else:
                 add_unresolved(n)
 
-    def process(self, graph):
+    def process(self, graph: LGraph):
         nodes = self.nodes = graph.getLayerlessNodes()
         # list of sink nodes.
         sinks = self.sinks = UniqList()

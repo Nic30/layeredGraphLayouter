@@ -1,7 +1,8 @@
 from layeredGraphLayouter.containers.lGraph import LGraph
+from layeredGraphLayouter.iLayoutProcessor import ILayoutProcessor
 
 
-class ReversedEdgeRestorer():
+class ReversedEdgeRestorer(ILayoutProcessor):
     """
     Restores the direction of reversed edges. (edges with the property
     {@link org.eclipse.elk.alg.layered.options.LayeredOptions#REVERSED set to {@code true)
