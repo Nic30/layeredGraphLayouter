@@ -88,7 +88,10 @@ class LPort():
         while True:
             if p is None:
                 break
-            names.append(p.name)
+            name = p.name
+            if name is None:
+                name = "<Unnamed>"
+            names.append(name)
             p = p.parent
         return list(reversed(names))
 
