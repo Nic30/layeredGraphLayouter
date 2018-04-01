@@ -14,6 +14,7 @@ class LEdge():
     :ivar reversed: If True this edge has src,srcNode/dst,dstNode in reversed order
     :ivar isSelfLoop: flag, if True this edge starts and ends on same node
     """
+
     def __init__(self, name: str=None, originObj=None):
         if name is not None:
             assert isinstance(name, str)
@@ -28,6 +29,7 @@ class LEdge():
         self.junctionPoints = None
         self.edgeThickness = 1.5
         self.labels = []
+        self.bendPoints = []
 
     def copyProperties(self, other: "LEdge"):
         self.edgeThickness = other.edgeThickness
@@ -55,7 +57,7 @@ class LEdge():
             self.setSrcDst(None, None)
             if oldDst.inputCollect:
                 newSrc = LGraphUtil.provideCollectorPort(layeredGraph, oldDst.getNode(),
-                    PortType.OUTPUT, PortSide.EAST)
+                                                         PortType.OUTPUT, PortSide.EAST)
             else:
                 newSrc = oldDst
 
@@ -63,7 +65,7 @@ class LEdge():
 
             if oldSrc.inputCollect:
                 newDst = LGraphUtil.provideCollectorPort(layeredGraph, oldSrc.getNode(),
-                    PortType.INPUT, PortSide.WEST)
+                                                         PortType.INPUT, PortSide.WEST)
             else:
                 newDst = oldSrc
 
@@ -88,7 +90,10 @@ class LEdge():
                 label.edgeLabelsPlacement = EdgeLabelPlacement.TAIL
 
     def setTarget(self, dst: "LPort"):
+        if self.dst is not None:
+            self.dst.incomingEdges.remove(self)
         self.dst = dst
+
         if dst is None:
             self.dstNode = None
             self.isSelfLoop = False
@@ -97,8 +102,39 @@ class LEdge():
             dst.incomingEdges.append(self)
             self.isSelfLoop = self.srcNode is self.dstNode
 
+    def setTargetAndInsertAtIndex(self, targetPort: "LPort", index: int):
+        """
+        The same as {@link #setTarget(LPort)} with the exception that the index the edge is inserted at
+        in the target port's list of incoming edges can be specified.
+
+        If you need to think about whether you want to use this or {@link #setTarget(LPort)}, chances
+        are you want the latter.
+
+        @param targetPort
+                   the target port to set
+        @param index
+                   the index to insert the edge at in the port's list of edges.
+        @throws IndexOutOfBoundsException
+                    if {@code target != null} and the index is invalid.
+        """
+        if self.dst is not None:
+            self.dst.incomingEdges.remove(self)
+
+        self.dst = targetPort
+
+        if self.dst is not None:
+            # The insertion index below is the only difference to
+            # setTarget(LPort)
+            self.dst.incomingEdges.insert(index, self)
+            self.dstNode = targetPort.getNode()
+        else:
+            self.dstNode = None
+
     def setSource(self, src: "LPort"):
+        if self.src is not None:
+            self.src.outgoingEdges.remove(self)
         self.src = src
+
         if src is None:
             self.srcNode = None
             self.isSelfLoop = False
