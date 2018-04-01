@@ -7,6 +7,9 @@ class GeometryRect():
         self.width = width
         self.height = height
 
+    def getAbsoluteAnchor(self):
+        return (0, 0)
+
     def __repr__(self):
         return "<%s, x:%f, y:%f, width:%f, height:%f>" % (
             self.__class__.__name__, self.x, self.y, self.width, self.height)
