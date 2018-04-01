@@ -117,14 +117,8 @@ class BarycenterHeuristic():
         _startIndex = startIndex(isForwardSweep, len(order))
         layer = list(order[_startIndex])
         self.minimizeCrossingsInLayer(layer, False, True, isForwardSweep)
-        print("setFirstLayerOrder")
-        print(layer)
         new_order = {n: i for i, n in enumerate(layer)}
         order[_startIndex].sort(key=lambda n: new_order[n])
-
-        print(layer)
-        print(order[_startIndex])
-
         return False  # Does not always improve
 
     def fillInUnknownBarycenters(self, nodes, preOrdered):
