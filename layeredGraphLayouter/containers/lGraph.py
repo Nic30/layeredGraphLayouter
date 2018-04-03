@@ -5,6 +5,7 @@ from layeredGraphLayouter.containers.constants import PortConstraints,\
 from layeredGraphLayouter.containers.lEdge import LEdge
 from layeredGraphLayouter.containers.lNode import LNode
 from layeredGraphLayouter.containers.lPort import LPort
+from layeredGraphLayouter.containers.spacings import LGraphSpacings
 
 
 class LNodeLayer(list):
@@ -26,11 +27,6 @@ class LNodeLayer(list):
 
     def __hash__(self):
         return id(self)
-
-
-class LGraphSpacings():
-    def __init__(self):
-        raise NotImplementedError()
 
 
 class LGraph():
