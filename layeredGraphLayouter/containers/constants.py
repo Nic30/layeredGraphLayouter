@@ -17,6 +17,8 @@ class NodeType(Enum):
     # a dummy node representing a breaking point used to 'wrap' graphs.
     BREAKING_POINT = 6
 
+    _VALUES_CNT = BREAKING_POINT + 1
+
 
 class PortType(Enum):
     UNDEFINED = 0
@@ -224,6 +226,28 @@ class FixedAlignment(Enum):
     RIGHTDOWN = 4
     # Creates a balanced layout from the four possible candidates.
     BALANCED = 5
+
+
+class LayeredOptions():
+    SPACING_NODE_NODE = 20
+    SPACING_NODE_NODE_BETWEEN_LAYERS = 20
+    SPACING_EDGE_NODE = 10
+    SPACING_EDGE_NODE_BETWEEN_LAYERS = 10
+    SPACING_EDGE_EDGE = 10
+    SPACING_EDGE_EDGE_BETWEEN_LAYERS = 10
+    SPACING_PORT_PORT = 10
+    SPACING_LABEL_NODE = 5
+    SPACING_LABEL_PORT = 1
+
+
+class EdgeStraighteningStrategy(Enum):
+    """
+    Specifies how the compaction step of the {@link BKNodePlacer} should be executed.
+    """
+    # As specified in the original paper.
+    NONE = 0
+    # An integrated method trying to increase the number of straight edges.
+    IMPROVE_STRAIGHTNESS = 1
 
 
 class UnsupportedConfigurationException(Exception):

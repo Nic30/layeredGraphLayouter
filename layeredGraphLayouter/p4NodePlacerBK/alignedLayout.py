@@ -3,6 +3,7 @@ from layeredGraphLayouter.containers.lGraph import LGraph
 from math import inf
 from layeredGraphLayouter.containers.lPort import LPort
 from layeredGraphLayouter.containers.lNode import LNode
+from _collections import defaultdict
 
 
 class VDirection(Enum):
@@ -65,15 +66,15 @@ class BKAlignedLayout():
         self.layeredGraph = layeredGraph
         # Initialize spacing value from layout options.
         self.spacings = layeredGraph.spacings
-        self.root = [None for _ in range(nodeCount)]
-        self.blockSize = [0 for _ in range(nodeCount)]
-        self.align = [None for _ in range(nodeCount)]
-        self.innerShift = [0 for _ in range(nodeCount)]
-        self.sink = [None for _ in range(nodeCount)]
-        self.shift = [0 for _ in range(nodeCount)]
-        self.y = [0 for _ in range(nodeCount)]
-        self.su = [False for _ in range(nodeCount)]
-        self.od = [True for _ in range(nodeCount)]
+        self.root = {}
+        self.blockSize = defaultdict(lambda: 0)
+        self.align = {}
+        self.innerShift = {}
+        self.sink = defaultdict(lambda: None)
+        self.shift = defaultdict(lambda: 0)
+        self.y = defaultdict(lambda: 0)
+        self.su = defaultdict(lambda: False)
+        self.od = defaultdict(lambda: True)
         self.vdir = vdir
         self.hdir = hdir
 

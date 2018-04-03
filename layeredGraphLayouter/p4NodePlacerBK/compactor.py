@@ -5,6 +5,9 @@ from layeredGraphLayouter.p4NodePlacerBK.neighborhoodInformation import Neighbor
 from layeredGraphLayouter.containers.lNode import LNode
 from _collections import deque
 from layeredGraphLayouter.containers.lGraph import LGraph
+from layeredGraphLayouter.containers.constants import EdgeStraighteningStrategy
+from layeredGraphLayouter.p4NodePlacerBK.tresholdStrategy import SimpleThresholdStrategy,\
+    NullThresholdStrategy
 
 
 class ClassNode():
@@ -18,16 +21,16 @@ class ClassNode():
         self.outgoing = []
         self.indegree = 0
 
-    def addEdge(self, target: ClassNode, separation: float):
+    def addEdge(self, target: "ClassNode", separation: float):
         se = ClassEdge(target, separation)
         target.indegree += 1
         self.outgoing.append(se)
 
 
 class ClassEdge():
-    """ 
-     * An edge of the class graph, holds the required separation
-     * between the connected classes.
+    """
+    An edge of the class graph, holds the required separation
+    between the connected classes.
     """
 
     def __init__(self, target: ClassNode, separation: int):
@@ -67,7 +70,7 @@ class BKCompactor():
         else:
             # mimics the original compaction strategy without additional
             # straightening
-            self.threshStrategy = NoneThresholdStrategy()
+            self.threshStrategy = NullThresholdStrategy()
         self.sinkNodes = {}
 
     # /
@@ -83,7 +86,7 @@ class BKCompactor():
         """
         # Initialize fields with basic values, partially depending on the
         # direction
-        for layer in self.layerGraph.layers:
+        for layer in self.layeredGraph.layers:
             for node in layer:
                 bal.sink[node] = node
                 if bal.vdir == VDirection.UP:
@@ -97,7 +100,7 @@ class BKCompactor():
         # If the horizontal direction is LEFT, the layers are traversed from right to left, thus
         # a reverse iterator is needed (note that this does not change the
         # original list of layers)
-        layers = self.layeredGraph.getLayers()
+        layers = self.layeredGraph.layers
         if bal.hdir == HDirection.LEFT:
             layers = reversed(layers)
 
@@ -112,7 +115,7 @@ class BKCompactor():
         for layer in layers:
             # As with layers, we need a reversed iterator for blocks for
             # different directions
-            nodes = layer.getNodes()
+            nodes = layer
             if bal.vdir == VDirection.UP:
                 nodes = reversed(nodes)
 
@@ -136,7 +139,7 @@ class BKCompactor():
                 # further compact the drawing (the block's non-root nodes will be processed later by
                 # this loop and will thus use the updated y position calculated
                 # here)
-                if (v.equals(bal.root[v])):
+                if (v == bal.root[v]):
                     sinkShift = bal.shift[bal.sink[v]]
 
                     if ((bal.vdir == VDirection.UP and sinkShift > -inf)
@@ -182,7 +185,7 @@ class BKCompactor():
         layeredGraph = self.layeredGraph
         while True:
             currentIndexInLayer = ni.nodeIndex[currentNode]
-            currentLayerSize = currentNode.getLayer().getNodes().size()
+            currentLayerSize = len(currentNode.layer)
 
             # If the node is the top or bottom node of its layer, it can be placed safely since it is
             # the first to be placed in its layer. If it's not, we'll have to

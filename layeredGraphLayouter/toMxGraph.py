@@ -1,10 +1,25 @@
-from layeredGraphLayouter.containers.geometry import GeometryRect
 from layeredGraphLayouter.containers.lEdge import LEdge
 from layeredGraphLayouter.containers.lGraph import LGraph
 from layeredGraphLayouter.containers.lNode import LNode, LayoutExternalPort
 from layeredGraphLayouter.containers.lPort import LPort
 from layeredGraphLayouter.containers.sizeConfig import PORT_HEIGHT, UNIT_HEADER_OFFSET
 import xml.etree.ElementTree as etree
+
+
+class GeometryRect():
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+    @classmethod
+    def fromLRectangle(cls, rect):
+        return cls(rect.possition.x, rect.possition.y, rect.size.x, rect.size.y)
+
+    def __repr__(self):
+        return "<%s, x:%f, y:%f, width:%f, height:%f>" % (
+            self.__class__.__name__, self.x, self.y, self.width, self.height)
 
 
 class LayoutIdCtx(dict):
@@ -40,21 +55,21 @@ class ToMxGraph():
         }
 
     def LPort_coordinates(self, lp):
-        p = lp.getNode().geometry
-        g = lp.geometry
+        p = lp.getNode()
+        ch = lp
 
-        if p.width == 0:
-            #assert g.x - p.x == 0, (g.x, p.x)
+        if p.size.x == 0:
+            #assert g.x - p.x == 0, (g.possition.x, p.x)
             x_rel = 0
         else:
-            x_rel = (g.x - p.x) / p.width
+            x_rel = (ch.possition.x - p.possition.x) / p.size.x
             assert x_rel >= 0.0 and x_rel <= 1.0, x_rel
 
-        if p.height == 0:
+        if p.size.y == 0:
             #assert g.y - p.y == 0, (g.y, p.y)
             y_rel = 0
         else:
-            y_rel = (g.y - p.y + g.height / 2) / p.height
+            y_rel = (ch.possition.y - p.possition.y + ch.size.y / 2) / p.size.y
             assert y_rel >= 0.0 and y_rel <= 1.0, y_rel
 
         if x_rel >= 0.5:
@@ -72,7 +87,7 @@ class ToMxGraph():
             id=_id,
             style="rounded=0;whiteSpace=wrap;html=1;",
             parent="1", vertex="1")
-        g = lu.geometry
+        g = GeometryRect.fromLRectangle(lu)
         c.append(self.GeometryRect_toMxGraph(g))
         yield c
 
@@ -102,7 +117,7 @@ class ToMxGraph():
             id=self.getMxGraphId(lp),
             style="rounded=0;whiteSpace=wrap;html=1;",
             parent=parentId, vertex="1")
-        g = lp.geometry
+        g = GeometryRect.fromLRectangle(lp)
         g = GeometryRect(g.x - parentGeom.x, g.y -
                          parentGeom.y, g.width, g.height)
         p.append(self.GeometryRect_toMxGraph(g))
@@ -115,7 +130,8 @@ class ToMxGraph():
                        style="rounded=0;whiteSpace=wrap;html=1;",
                        vertex="1",
                        parent="1")
-            c.append(self.GeometryRect_toMxGraph(lep.geometry))
+            g = GeometryRect.fromLRectangle(lep)
+            c.append(self.GeometryRect_toMxGraph(g))
 
             yield c
         else:

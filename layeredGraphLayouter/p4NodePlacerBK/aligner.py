@@ -7,6 +7,8 @@ from layeredGraphLayouter.containers.lGraph import LGraph
 from layeredGraphLayouter.p4NodePlacerBK.alignedLayout import BKAlignedLayout,\
     HDirection, VDirection
 from layeredGraphLayouter.p4NodePlacerBK.neighborhoodInformation import NeighborhoodInformation
+from layeredGraphLayouter.p4NodePlacerBK.nodePlacerUtils import getBlocks,\
+    getEdge
 
 
 class BKAligner():
@@ -74,9 +76,9 @@ class BKAligner():
             # CHECKSTYLEOFF Local Variable Names
             for v_i_k in nodes:
                 if bal.hdir == HDirection.LEFT:
-                    neighbors = ni.rightNeighbors.get(v_i_k)
+                    neighbors = ni.rightNeighbors[v_i_k]
                 else:
-                    neighbors = ni.leftNeighbors.get(v_i_k)
+                    neighbors = ni.leftNeighbors[v_i_k]
 
                 if neighbors:
 
@@ -90,13 +92,12 @@ class BKAligner():
                         # Check, whether v_i_k can be added to a block of its
                         # upper/lower neighbor(s)
                         for m in range(high, low - 1, -1):
-                            if bal.align[v_i_k].equals(v_i_k):
+                            if bal.align[v_i_k] == v_i_k:
                                 u_m, u_m_edge = neighbors[m]
 
                                 # Again, getEdge won't return null because the neighbor relationship
                                 # ensures that at least one edge exists
-                                if (not markedEdges.contains(u_m_edge)
-                                        and r > ni.nodeIndex[u_m]):
+                                if u_m_edge not in markedEdges and r > ni.nodeIndex[u_m]:
                                     bal.align[u_m] = v_i_k
                                     bal.root[v_i_k] = bal.root[u_m]
                                     bal.align[v_i_k] = bal.root[v_i_k]
@@ -111,13 +112,12 @@ class BKAligner():
                             if bal.align[v_i_k] == v_i_k:
                                 um, um_edge = neighbors[m]
 
-                                if (not markedEdges.contains(um_edge)
-                                        and r < ni.nodeIndex[um]):
+                                if um_edge not in markedEdges and r < ni.nodeIndex[um]:
                                     bal.align[um] = v_i_k
                                     bal.root[v_i_k] = bal.root[um]
                                     bal.align[v_i_k] = bal.root[v_i_k]
-                                    bal.od[bal.root[v_i_k]
-                                           ] &= v_i_k.type == NodeType.LONG_EDGE
+                                    _k = bal.root[v_i_k]
+                                    bal.od[_k] &= v_i_k.type == NodeType.LONG_EDGE
                                     r = ni.nodeIndex[um]
 
     """
@@ -129,8 +129,7 @@ class BKAligner():
     """
 
     def insideBlockShift(self, bal: BKAlignedLayout):
-        blocks = self.getBlocks(bal)
-        getEdge = self.getEdge
+        blocks = getBlocks(bal)
 
         for root in blocks.keys():
             # For each block, we place the top left corner of the root node at coordinate (0,0). We

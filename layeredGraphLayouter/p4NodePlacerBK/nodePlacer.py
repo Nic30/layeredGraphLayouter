@@ -14,6 +14,7 @@ from layeredGraphLayouter.p4NodePlacerBK.alignedLayout import BKAlignedLayout,\
     VDirection, HDirection
 from layeredGraphLayouter.p4NodePlacerBK.neighborhoodInformation import NeighborhoodInformation
 from layeredGraphLayouter.p4NodePlacerBK.aligner import BKAligner
+from layeredGraphLayouter.p4NodePlacerBK.compactor import BKCompactor
 
 
 class BKNodePlacer(ILayoutProcessor):
@@ -139,19 +140,19 @@ class BKNodePlacer(ILayoutProcessor):
         if align == FixedAlignment.LEFTDOWN:
             leftdown = BKAlignedLayout(
                 layeredGraph, ni.nodeCount, VDirection.DOWN, HDirection.LEFT)
-            layouts.add(leftdown)
+            layouts.append(leftdown)
         elif align == FixedAlignment.LEFTUP:
             leftup = BKAlignedLayout(
                 layeredGraph, ni.nodeCount, VDirection.UP, HDirection.LEFT)
-            layouts.add(leftup)
+            layouts.append(leftup)
         elif align == FixedAlignment.RIGHTDOWN:
             rightdown = BKAlignedLayout(
                 layeredGraph, ni.nodeCount, VDirection.DOWN, HDirection.RIGHT)
-            layouts.add(rightdown)
+            layouts.append(rightdown)
         elif align == FixedAlignment.RIGHTUP:
             rightup = BKAlignedLayout(
                 layeredGraph, ni.nodeCount, VDirection.UP, HDirection.RIGHT)
-            layouts.add(rightup)
+            layouts.append(rightup)
         else:
             leftdown = BKAlignedLayout(
                 layeredGraph, ni.nodeCount, VDirection.DOWN, HDirection.LEFT)
@@ -161,10 +162,10 @@ class BKNodePlacer(ILayoutProcessor):
                 layeredGraph, ni.nodeCount, VDirection.DOWN, HDirection.RIGHT)
             rightup = BKAlignedLayout(
                 layeredGraph, ni.nodeCount, VDirection.UP, HDirection.RIGHT)
-            layouts.add(rightdown)
-            layouts.add(rightup)
-            layouts.add(leftdown)
-            layouts.add(leftup)
+            layouts.append(rightdown)
+            layouts.append(rightup)
+            layouts.append(leftdown)
+            layouts.append(leftup)
 
         aligner = BKAligner(layeredGraph, ni)
         for bal in layouts:
@@ -220,7 +221,7 @@ class BKNodePlacer(ILayoutProcessor):
         # Apply calculated positions to nodes.
         for layer in layeredGraph.layers:
             for node in layer:
-                node.geometry.y = chosenLayout.y[node] + \
+                node.possition.y = chosenLayout.y[node] + \
                     chosenLayout.innerShift[node]
 
         # Debug output
@@ -352,7 +353,7 @@ class BKNodePlacer(ILayoutProcessor):
                 for n in layer:
                     nodePosY = bal.y[n] + bal.innerShift[n]
                     min_[i] = min(min[i], nodePosY)
-                    max_[i] = max(max[i], nodePosY + n.geometry.height)
+                    max_[i] = max(max[i], nodePosY + n.size.height)
 
         # Find the shift between the smallest and the four layouts
         shift = []
@@ -414,63 +415,6 @@ class BKNodePlacer(ILayoutProcessor):
                         and ni.layerIndex[node.layer] == layer1):
                     return True
         return False
-
-    @staticmethod
-    def getEdge(source: LNode, target: LNode) -> LEdge:
-        """
-        Find an edge between two given nodes.
-
-        :param source The source node of the edge
-        :param target The target node of the edge
-        :return: The edge between source and target, or None if there is none
-        """
-        for edge in source.getOutgoingEdges():
-            # [TODO] or is suspicious
-            if (edge.dstNode is target) or (edge.srcNode is target):
-                return edge
-
-        return None
-
-    @staticmethod
-    def getBlocks(bal: BKAlignedLayout):
-        """
-         * Finds all blocks of a given layout.
-         * 
-         * :param bal The layout of which the blocks shall be found
-         * :return: The blocks of the given layout
-        """
-        blocks = defaultdict(list)
-
-        for layer in bal.layeredGraph.layers:
-            for node in layer:
-                root = bal.root[node]
-                blockContents = blocks[root]
-                blockContents.append(node)
-
-        return blocks
-
-    @staticmethod
-    def getClasses(bal: BKAlignedLayout):
-        """
-        Finds all classes of a given layout. Only used for debug output.
-
-        :param bal The layout whose classes to find
-        :return: The classes of the given layout
-        """
-        classes = defaultdict(list)
-
-        # We need to enumerate all block roots
-        roots = set(bal.root)
-        for root in roots:
-            if root is None:
-                print("There are no classes in a balanced layout.")
-                break
-
-            sink = bal.sink[root]
-            classContents = classes[sink]
-            classContents.append(root)
-
-        return classes
 
     def checkOrderConstraint(self, layeredGraph: LGraph, bal: BKAlignedLayout):
         """

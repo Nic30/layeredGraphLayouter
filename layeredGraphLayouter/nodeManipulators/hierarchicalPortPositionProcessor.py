@@ -86,5 +86,5 @@ class HierarchicalPortPositionProcessor(ILayoutProcessor):
                 finalYCoordinate *= graphHeight
 
             # Apply the node's new Y coordinate
-            node.geometry.y = finalYCoordinate - node.portAnchor.y
+            node.possition.y = finalYCoordinate - node.portAnchor.y
             node.borderToContentAreaCoordinates(False, True)

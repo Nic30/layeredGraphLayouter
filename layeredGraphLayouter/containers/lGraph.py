@@ -1,11 +1,12 @@
 from random import Random
 
 from layeredGraphLayouter.containers.constants import PortConstraints,\
-    HierarchyHandling, FixedAlignment
+    HierarchyHandling, FixedAlignment, EdgeStraighteningStrategy
 from layeredGraphLayouter.containers.lEdge import LEdge
 from layeredGraphLayouter.containers.lNode import LNode
 from layeredGraphLayouter.containers.lPort import LPort
 from layeredGraphLayouter.containers.spacings import LGraphSpacings
+from layeredGraphLayouter.containers.geometry import Point
 
 
 class LNodeLayer(list):
@@ -34,6 +35,8 @@ class LGraph():
         self.edges = []
         self.nodes = []
         self.layers = []
+
+        self.size = Point()
 
         # node to layout node
         self._node2lnode = {}
@@ -71,7 +74,9 @@ class LGraph():
         self.unnecessaryBendpoints = False
         self.nodePlacementBkFixedAlignment = FixedAlignment.NONE
         self.nodePlacementFavorStraightEdges = True
-        self.spacings = LGraphSpacings()
+        self.spacings = LGraphSpacings(self)
+        self.nodePlacementBkEdgeStraightening = EdgeStraighteningStrategy.IMPROVE_STRAIGHTNESS
+        self.portConstraints = PortConstraints.UNDEFINED
 
     def getLayerlessNodes(self):
         """

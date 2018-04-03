@@ -66,7 +66,7 @@ class LongEdgeJoiner(ILayoutProcessor):
         # If we are to add unnecessary bend points, we need to know where. We take the position of the
         # first port we find. (It doesn't really matter which port we're using, so we opt to keep it
         # surprisingly simple.)
-        unnecessaryBendpoint = longEdgeDummy.west[0].geometry.getAbsoluteAnchor()
+        unnecessaryBendpoint = longEdgeDummy.west[0].getAbsoluteAnchor()
 
         # The following code assumes that edges with the same indices in the two lists originate from
         # the same long edge, which is true for the current implementation of LongEdgeSplitter and

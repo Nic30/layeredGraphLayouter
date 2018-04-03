@@ -1,4 +1,4 @@
-from layeredGraphLayouter.containers.geometry import GeometryRect
+from layeredGraphLayouter.containers.geometry import LRectangle
 from layeredGraphLayouter.containers.lEdge import LEdge
 from layeredGraphLayouter.containers.lGraph import LGraph
 from layeredGraphLayouter.containers.lNode import LNode, LayoutExternalPort
@@ -12,14 +12,15 @@ EXTERNAL_PORT_FILL = "mediumpurple"
 COMPONENT_FILL = "cornflowerblue"
 
 
-def svg_rect_from_geom(geom: GeometryRect, label=None, fill=COMPONENT_FILL):
+def svg_rect_from_lrectangle(rect: LRectangle, label=None, fill=COMPONENT_FILL):
     g = etree.Element("g")
-    r = svg_rect(geom.x, geom.y, geom.width, geom.height, fill=fill)
+    r = svg_rect(rect.possition.x, rect.possition.y,
+                 rect.size.x, rect.size.y, fill=fill)
     g.append(r)
     if label is not None:
-        g.append(svg_text(geom.x + geom.width / 2,
+        g.append(svg_text(rect.possition.x + rect.size.x / 2,
                           # center text in the middle
-                          geom.y + PORT_HEIGHT * 0.7, label))
+                          rect.possition.y + PORT_HEIGHT * 0.7, label))
     return g
 
 
@@ -65,15 +66,15 @@ class ToSvg():
         }
 
     def LPort_coordinates(self, lp: LPort):
-        p = lp.getNode().geometry
-        g = lp.geometry
-        is_on_right = g.x >= p.x + p.width / 2
+        p = lp.getNode()
+        ch = lp
+        is_on_right = p.possition.x >= p.possition.x + p.possition.x / 2
         if is_on_right:
-            x = p.x + p.width
+            x = p.possition.x + p.size.x
         else:
-            x = p.x
+            x = p.possition.x
 
-        y = (g.y + PORT_HEIGHT / 2)
+        y = (ch.possition.y + PORT_HEIGHT / 2)
 
         return x, y
 
@@ -81,7 +82,7 @@ class ToSvg():
         return str(self.id_ctx[obj] + 2)
 
     def LNode_toSvg(self, lu: LNode, fill=COMPONENT_FILL):
-        n = svg_rect_from_geom(lu.geometry, label=lu.name, fill=fill)
+        n = svg_rect_from_lrectangle(lu, label=lu.name, fill=fill)
 
         for lp in lu.iterPorts():
             for obj in self.LPort_toSvg(lp):
@@ -89,13 +90,13 @@ class ToSvg():
         yield n
 
     def LPort_toSvg(self, lp: LPort):
-        yield svg_rect_from_geom(lp.geometry, label=lp.name)
+        yield svg_rect_from_lrectangle(lp, label=lp.name)
 
     def LayoutExternalPort_toSvg(self, lep: LayoutExternalPort):
         if len(lep.west) + len(lep.east) == 1:
-            yield svg_rect_from_geom(lep.geometry,
-                                     label=lep.name,
-                                     fill=EXTERNAL_PORT_FILL)
+            yield svg_rect_from_lrectangle(lep,
+                                           label=lep.name,
+                                           fill=EXTERNAL_PORT_FILL)
         else:
             yield from self.LNode_toSvg(lep, fill=EXTERNAL_PORT_FILL)
 
@@ -117,8 +118,8 @@ class ToSvg():
 
     def LGraph_toSvg(self, la: LGraph) -> etree.Element:
         svg = etree.Element("svg", {
-            "width": str(la.width),
-            "height": str(la.height),
+            "width": str(la.size.x),
+            "height": str(la.size.y),
         })
         defs = etree.fromstring(
             """

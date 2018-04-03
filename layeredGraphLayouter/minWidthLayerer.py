@@ -87,10 +87,10 @@ class MinWidthLayerer(ILayoutProcessor):
         # Compute the minimum nodes size (of the real nodes). We're going to use this value in the
         # next step to normalize the different node sizes.
         minimumNodeSize = min(
-            notInserted, key=lambda node: node.geometry.height)
+            notInserted, key=lambda node: node.size.y)
         # The minimum nodes size might be zero. If This is the case, then simply don't normalize
         # the node sizes.
-        minimumNodeSize = max(1, minimumNodeSize.geometry.height)
+        minimumNodeSize = max(1, minimumNodeSize.size.y)
 
         # We initialize the nodes' id and use it to refer to its in- and out-degree stored each in
         # an array. We also compute the size of each node in relation to the smallest real node in
@@ -98,7 +98,7 @@ class MinWidthLayerer(ILayoutProcessor):
         avgSize = 0
         for node in notInserted:
             node.initPortDegrees()
-            node.normHeight = node.geometry.height / minimumNodeSize
+            node.normHeight = node.size.y / minimumNodeSize
             # The average size of a node will also be based on the normalized
             # size.
             avgSize += node.normHeight

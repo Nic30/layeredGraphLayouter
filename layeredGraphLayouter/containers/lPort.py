@@ -1,11 +1,11 @@
 from itertools import chain
 from typing import List
 
-from layeredGraphLayouter.containers.geometry import GeometryRect
+from layeredGraphLayouter.containers.geometry import LRectangle
 from layeredGraphLayouter.containers.sizeConfig import PORT_HEIGHT
 
 
-class LPort():
+class LPort(LRectangle):
     """
     Port for component in component diagram
 
@@ -19,11 +19,12 @@ class LPort():
     """
 
     def __init__(self, parent: "LNode", direction, side, name: str=None):
+        super(LPort, self).__init__()
         self.originObj = None
         self.parent = parent
         self.name = name
         self.direction = direction
-        self.geometry = GeometryRect(0, 0, 0, 0)
+
         self.outgoingEdges = []
         self.incomingEdges = []
         self.children = []
@@ -67,20 +68,19 @@ class LPort():
             yield from it
 
     def initDim(self, width, x=0, y=0):
-        g = self.geometry
-        g.x += x
-        g.y += y
-        g.width = width
+        p = self.possition
+        p.x += x
+        p.y += y
+        self.size.x = width
 
         if self.name:
-            g.height = PORT_HEIGHT
+            self.size.y = PORT_HEIGHT
 
-        return g.y + g.height
+        return p.y + self.size.y
 
     def translate(self, x, y):
-        self.geometry.x += x
-        self.geometry.y += y
         assert not self.children
+        super(LPort, self).translate(x, y)
 
     def _getDebugName(self) -> List[str]:
         names = []

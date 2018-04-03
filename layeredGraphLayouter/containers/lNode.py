@@ -3,13 +3,13 @@ from typing import List, Generator
 
 from layeredGraphLayouter.containers.constants import PortSide, PortType,\
     NodeType, PortConstraints, LayerConstraint, InLayerConstraint
-from layeredGraphLayouter.containers.geometry import GeometryRect
+from layeredGraphLayouter.containers.geometry import LRectangle
 from layeredGraphLayouter.containers.lPort import LPort
 from layeredGraphLayouter.containers.sizeConfig import UNIT_HEADER_OFFSET,\
     PORT_HEIGHT, width_of_str
 
 
-class LNode():
+class LNode(LRectangle):
     """
     Component for component diagram
 
@@ -24,6 +24,7 @@ class LNode():
     """
 
     def __init__(self, graph: "LGraph", name: str= None, originObj=None):
+        super(LNode, self).__init__()
         if name is not None:
             assert isinstance(name, str)
         self.originObj = originObj
@@ -34,7 +35,6 @@ class LNode():
         self.north = []
         self.south = []
 
-        self.geometry = GeometryRect(0, 0, 0, 0)
         self.parent = None
 
         # {PortItem: LPort}
@@ -101,11 +101,10 @@ class LNode():
         width = max(port_w, label_w)
         height = UNIT_HEADER_OFFSET + \
             max(len(self.west), len(self.east)) * PORT_HEIGHT
-        g = self.geometry 
-        g.x += x
-        g.y += y
-        g.width = width
-        g.height = height 
+        self.possition.x += x
+        self.possition.y += y
+        self.size.x = width
+        self.size.y = height
 
         if self.south or self.north:
             raise NotImplementedError()
@@ -125,8 +124,8 @@ class LNode():
             _y = o.initDim(port_width, x=x, y=_y)
 
     def translate(self, x, y):
-        self.geometry.x += x
-        self.geometry.y += y
+        self.possition.x += x
+        self.possition.y += y
         for p in self.iterPorts():
             p.translate(x, y)
 
@@ -194,6 +193,10 @@ class LNode():
     def getIncomingEdges(self):
         for port in self.iterPorts():
             yield from port.incomingEdges
+
+    def getConnectedEdges(self):
+        for port in self.iterPorts():
+            yield from port.iterEdges()
 
     def setLayer(self, layer):
         if self.layer is layer:

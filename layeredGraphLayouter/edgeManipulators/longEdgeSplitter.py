@@ -97,17 +97,17 @@ class LongEdgeSplitter(ILayoutProcessor):
         if (thickness < 0):
             raise ValueError(thickness)
 
-        dummyNode.geometry.height = thickness
+        dummyNode.size.y = thickness
         portPos = floor(thickness / 2)
 
         # Create dummy input and output ports
         dummyInput = LPort(dummyNode, PortType.INPUT, PortSide.WEST)
         dummyNode.west.append(dummyInput)
-        dummyInput.geometry.y = portPos
+        dummyInput.possition.y = portPos
 
         dummyOutput = LPort(dummyNode, PortType.OUTPUT, PortSide.EAST)
         dummyNode.east.append(dummyOutput)
-        dummyOutput.geometry.y = portPos
+        dummyOutput.possition.y = portPos
 
         edge.setTarget(dummyInput)
 
