@@ -1,4 +1,4 @@
-# layeredGraphLayouter - WIP
+# layeredGraphLayouter - !This repository will be removed and elk wrapper will be used instead because ELK is big and evolving software!
 
 [![Travis-ci Build Status](https://travis-ci.org/Nic30/layeredGraphLayouter.png?branch=master)](https://travis-ci.org/Nic30/layeredGraphLayouter)[![PyPI version](https://badge.fury.io/py/layeredGraphLayouter.svg)](http://badge.fury.io/py/layeredGraphLayouter)[![Coverage Status](https://coveralls.io/repos/github/Nic30/layeredGraphLayouter/badge.svg?branch=master)](https://coveralls.io/github/Nic30/layeredGraphLayouter?branch=master)[![Documentation Status](https://readthedocs.org/projects/layeredGraphLayouter/badge/?version=latest)](http://layeredGraphLayouter.readthedocs.io/en/latest/?badge=latest)
 
