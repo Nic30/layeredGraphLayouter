@@ -7,8 +7,6 @@ layeredGraphLayouter is python package for automatic generating of layered graph
 This was originally unofficial port of ELK (Eclipse Layout Kernel https://www.eclipse.org/elk/ https://github.com/eclipse/elk, http://www.rtsys.informatik.uni-kiel.de/en/research/kieler).
 but I was forced to do some radical optimizations which means this library is ELK-like more than ELK port.
 
-Also this library is in state of Work-In-Progress. Working version is expected ~06.2018.
-
 This library currently has 3 exporters:
 
 * toMxGraph - creates MxGraph xml which can be opened for example at draw.io
